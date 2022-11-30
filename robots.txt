@@ -1,0 +1,13 @@
+# START YOAST BLOCK
+# ---------------------------
+User-agent: *
+User-agent: AdsBot-Google
+Disallow: /feed/
+Disallow: /bwg_gallery/
+Disallow: /bwg_gallery-sitemap.xml
+Disallow: /*}$
+Disallow: /category/
+
+Sitemap: https://sharonloehrlapan.com/sitemap_index.xml
+# ---------------------------
+# END YOAST BLOCK
