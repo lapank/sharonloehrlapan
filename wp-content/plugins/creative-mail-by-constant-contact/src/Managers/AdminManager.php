@@ -6,6 +6,7 @@ use CreativeMail\CreativeMail;
 use CreativeMail\Helpers\EnvironmentHelper;
 use CreativeMail\Helpers\OptionsHelper;
 use CreativeMail\Helpers\SsoHelper;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Models\Response;
 use CreativeMail\Modules\DashboardWidgetModule;
 use CreativeMail\Modules\FeedbackNoticeModule;
@@ -693,7 +694,7 @@ final class AdminManager {
 			try {
 				return SsoHelper::generate_sso_link($instance_id, $instance_api_key, $connected_account_id, $linkReference, $linkParameters);
 			} catch ( Exception $ex ) {
-				RaygunManager::get_instance()->exception_handler($ex);
+				DatadogManager::get_instance()->exception_handler($ex);
 			}
 		}
 

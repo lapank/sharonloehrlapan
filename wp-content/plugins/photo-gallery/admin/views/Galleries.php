@@ -240,6 +240,11 @@ class GalleriesView_bwg extends AdminView_bwg {
           <input type="text" id="name" name="name" class="bwg_requried" value="<?php echo !empty($row->name) ? esc_html($row->name) : ''; ?>">
         </div>
         <div class="bwg-page-actions">
+          <?php
+          if ( !BWG()->is_pro ) {
+            WDWLibrary::gallery_to_pro_button();
+          }
+          ?>
 					<button class="tw-button-primary button-large" onclick="if (spider_check_required('name', 'Title') || bwg_check_instagram_gallery_input('<?php echo BWG()->options->instagram_access_token ?>') ) {return false;};
 						spider_set_input_value('task', 'save');
 						spider_set_input_value('ajax_task', '');
@@ -247,7 +252,6 @@ class GalleriesView_bwg extends AdminView_bwg {
 						spider_ajax_save('<?php echo BWG()->prefix . '_gallery'; ?>');return false;">
 		  			<?php echo ($params['id']) ? __('Update', 'photo-gallery') : __('Publish', 'photo-gallery'); ?>
 					</button>
-
 					<?php /* Preview Section */
 					if ( $params['id'] && $params['preview_action'] ) { ?>
 						<div class="tw-button-secondary bwg-preview-button " onclick="bwg_preview_section(this);"><?php _e('Preview', 'photo-gallery'); ?></div>
@@ -451,7 +455,7 @@ class GalleriesView_bwg extends AdminView_bwg {
           </span>
         </div>
         <div>
-          <a href="<?php echo esc_url(add_query_arg(array( 'page' => 'twb_photo-gallery' ), admin_url('admin.php'))); ?>" class="bwg-total-size-banner-button">
+          <a href="<?php echo esc_url(add_query_arg(array( 'page' => 'twbbwg_photo-gallery' ), admin_url('admin.php'))); ?>" class="bwg-total-size-banner-button">
             <?php esc_html_e('Optimize now', 'photo-gallery'); ?>
           </a>
         </div>

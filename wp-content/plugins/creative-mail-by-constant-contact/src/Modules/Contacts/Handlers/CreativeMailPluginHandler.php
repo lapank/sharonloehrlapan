@@ -4,7 +4,7 @@ namespace CreativeMail\Modules\Contacts\Handlers;
 
 define('CE4WP_CE_EVENTTYPE', 'WordPress - Creative Mail Form');
 
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use CreativeMail\Modules\Contacts\Models\OptActionBy;
 use Exception;
@@ -46,7 +46,7 @@ class CreativeMailPluginHandler extends BaseContactFormPluginHandler {
 		try {
 			$this->upsertContact($this->convertToContactModel($data));
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 
@@ -79,7 +79,7 @@ class CreativeMailPluginHandler extends BaseContactFormPluginHandler {
 					array_push($contactsArray, $contact);
 				}
 			} catch ( Exception $exception ) {
-				RaygunManager::get_instance()->exception_handler($exception);
+				DatadogManager::get_instance()->exception_handler($exception);
 				continue;
 			}
 			if ( isset($limit) && count($contactsArray) >= $limit ) {

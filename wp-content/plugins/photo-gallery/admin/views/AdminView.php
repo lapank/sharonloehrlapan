@@ -103,6 +103,9 @@ class AdminView_bwg {
         <div class="wd-list-view-header-buttons">
           <?php
           if ( $add_new_button ) {
+            if ( !BWG()->is_pro ) {
+              WDWLibrary::gallery_to_pro_button();
+            }
             ?>
             <a class="page-title-action" <?php echo $attributes; ?>>
               <?php echo $add_new_button_text; ?>

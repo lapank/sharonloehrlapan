@@ -1,16 +1,17 @@
 <?php
 
 /**
- * Class TWBGutenberg
+ * Class TWBBWGGutenberg
  */
-class TWBList {
+class TWBBWGList {
   private $booster;
   protected static $_instance = null;
 
   function __construct( $booster ) {
     $this->booster = $booster;
-    wp_enqueue_style(TenWebBooster::PREFIX . '-global');
-    wp_enqueue_script(TenWebBooster::PREFIX . '-global');
+    $this->booster->register_scripts();
+    wp_enqueue_style(TenWebBoosterBWG::PREFIX . '-global');
+    wp_enqueue_script(TenWebBoosterBWG::PREFIX . '-global');
     // Add column to the posts list table.
     add_filter('manage_post_posts_columns', array( $this, 'add_column' ));
     add_filter('manage_page_posts_columns', array( $this, 'add_column' ));
@@ -36,7 +37,7 @@ class TWBList {
   public function add_column( $columns ) {
     $offset = array_search('author', array_keys($columns));
 
-    return array_merge(array_slice($columns, 0, $offset), [ 'twb-speed-' . $this->booster->submenu['parent_slug'] => __('PageSpeed score', 'tenweb-booster') . TWBLibrary::dismiss_info_content( $this->booster, TRUE ) ], array_slice($columns, $offset, NULL));
+    return array_merge(array_slice($columns, 0, $offset), [ 'twb-speed-' . $this->booster->submenu['parent_slug'] => __('PageSpeed score', 'tenweb-booster') . TWBBWGLibrary::dismiss_info_content( $this->booster, TRUE ) ], array_slice($columns, $offset, NULL));
   }
 
   public function manage_column( $column_key, $post_id ) {
@@ -67,7 +68,7 @@ class TWBList {
       <?php _e('Checking...', 'tenweb-booster'); ?>
       <p class="twb-description"></p>
     </span>
-    <?php echo TWBLibrary::score($score, '', $post_id); ?>
+    <?php echo TWBBWGLibrary::score($score, '', $post_id); ?>
     <div class="twb-score-disabled-container twb-hidden">
       <div class="twb-score-title"><?php _e('Checking PageSpeed score', 'tenweb-booster'); ?></div>
       <div class="twb-score-desc"><?php _e('We are checking the PageSpeed score of a different page, please wait until the process is complete to run PageSpeed check on another page.', 'tenweb-booster'); ?></div>
@@ -77,8 +78,8 @@ class TWBList {
   }
 }
 
-function TWBList($booster) {
-  return TWBList::instance($booster);
+function TWBBWGList($booster) {
+  return TWBBWGList::instance($booster);
 }
 
 

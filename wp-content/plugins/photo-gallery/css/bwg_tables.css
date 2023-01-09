@@ -2877,9 +2877,7 @@ body.rtl .bwg-preview-section .bwg-preview-gallery-type .bwg-preview-gallery-typ
   color: #323A45;
   border: 1px solid #DEDEDE;
   border-radius: 4px;
-  background-position: 94% 50%;
-  background-size: 6px 5px;
-  background-image: url(../images/sorting_arrow.svg);
+  height: unset;
 }
 
 .wd-form .tablenav.top #doaction {
@@ -4394,4 +4392,24 @@ bwg-gallery-ul {
 
 #adminmenu li.toplevel_page_galleries_bwg a.wp-has-current-submenu img {
   filter: brightness(0) invert(1);
+}
+
+.bwg_gallery_to_pro_button {
+  border: 1px solid #22B339;
+  background: #22B339 0% 0% no-repeat padding-box;
+  border-radius: 4px;
+  opacity: 1;
+  font: normal normal 600 14px/19px Open Sans;
+  letter-spacing: 0.09px;
+  color: #FFFFFF;
+  padding: 8px 15px;
+  text-decoration: none;
+  margin: 0 15px;
+  display: inline-block;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.bwg_gallery_to_pro_button:hover {
+  color: #FFFFFF;
 }

@@ -18,19 +18,19 @@ $title_class            = 0 == $active_plugin_count ? 'ce4wp-body2' : 'ce4wp-plu
 		}
 		// Check if url is relative.
 		if (url.indexOf('plugin-install.php') >= 0) {
-            const ce4wpIframe = document.getElementById('plugin-store-iframe');
+			const ce4wpIframe = document.getElementById('plugin-store-iframe');
 			document.getElementById('plugin-store-title').textContent = name;
 			document.getElementById('plugin-store-modal').style.display = "block";
 
-            ce4wpIframe.src = url;
-            ce4wpIframe.title = name;
-            ce4wpIframe.onload = function() {
-                const ce4wpIframeInstallButton = ce4wpIframe
-                    .contentWindow
-                    .document
-                    .getElementById('plugin_install_from_iframe');
-                ce4wpIframeInstallButton.replaceWith(ce4wpIframeInstallButton.cloneNode(true));
-            };
+			ce4wpIframe.src = url;
+			ce4wpIframe.title = name;
+			ce4wpIframe.onload = function() {
+				const ce4wpIframeInstallButton = ce4wpIframe
+					.contentWindow
+					.document
+					.getElementById('plugin_install_from_iframe');
+				ce4wpIframeInstallButton.replaceWith(ce4wpIframeInstallButton.cloneNode(true));
+			};
 		} else {
 			let win = window.open(url, '_blank');
 			win.focus();

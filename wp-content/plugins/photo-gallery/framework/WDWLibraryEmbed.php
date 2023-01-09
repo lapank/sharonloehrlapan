@@ -7,11 +7,12 @@ class WDWLibraryEmbed {
 
   public function __construct() {}
 
-	public function get_provider($oembed, $url, $args = '') {
+	public static function get_provider($oembed, $url, $args = array()) {
 		$provider = false;
 		if (!isset($args['discover'])) {
 			$args['discover'] = true;
 		}
+    $oembed->providers["#https?://((m|www)\.)?youtube\.com/shorts.*#i"] = array("https://www.youtube.com/oembed", 1);
 		foreach ($oembed->providers as $matchmask => $data ) {
 			list( $providerurl, $regex ) = $data;
 			// Turn the asterisk-type provider URLs into regex
@@ -121,7 +122,7 @@ class WDWLibraryEmbed {
       include( BWG()->abspath . WPINC . '/class-oembed.php' );
     // get an oembed object
     $oembed = _wp_oembed_get_object();
-    if (method_exists($oembed, 'get_provider')) {
+    if (method_exists($oembed, 'get_provider') && strpos($url, "youtube.com/shorts") === false) {
       // Since 4.0.0
       $provider = $oembed->get_provider($url);
     }
@@ -238,8 +239,10 @@ class WDWLibraryEmbed {
         $embed_type = 'EMBED_OEMBED_' . $host;
         switch ($embed_type) {
           case 'EMBED_OEMBED_YOUTUBE': {
-            $youtube_regex = "#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)+(.*)+#";
+            $youtube_regex = "#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)+|(?<=youtube.com\/shorts\/)+(.*)+#";
             $matches = array();
+            /* Usable in case of short video shared link copy */
+            $url = str_replace("?feature=share", "", $url);
             preg_match($youtube_regex , $url , $matches);
             $filename = $matches[0];
 

@@ -12,7 +12,7 @@ class BWGViewGalleryBox {
     require_once(BWG()->plugin_dir . '/framework/WDWLibraryEmbed.php');
 
     $bwg = WDWLibrary::get('current_view', 0, 'intval');
-    $current_url =  WDWLibrary::get('current_url', '', 'sanitize_url');
+    $current_url = WDWLibrary::get('current_url', '', 'sanitize_url');
     $theme_id = WDWLibrary::get('theme_id', 0, 'intval');
     $current_image_id = WDWLibrary::get('image_id', 0, 'intval', 'GET');
     $gallery_id = WDWLibrary::get('gallery_id', 0, 'intval', 'GET');
@@ -771,9 +771,13 @@ class BWGViewGalleryBox {
             </span>
             <?php
           }
-          if( $params['popup_enable_ctrl_btn'] ) {
-					$share_url = add_query_arg(array('curr_url' => urlencode($current_url), 'image_id' => $current_image_id), WDWLibrary::get_share_page()) . '#bwg' . $gallery_id . '/' . $current_image_id;
-					?>
+          if ( $params['popup_enable_ctrl_btn'] ) {
+            $share_url = add_query_arg(array(
+                                       'gallery_id' => $gallery_id,
+                                       'image_id' => $current_image_id,
+                                       'curr_url' => $current_url,
+                                     ), WDWLibrary::get_share_page());
+            ?>
             <i title="<?php echo __('Play', 'photo-gallery'); ?>" class="bwg-icon-play bwg_ctrl_btn bwg_play_pause"></i>
             <?php if ($params['popup_enable_fullscreen']) {
               if (!$params['popup_fullscreen']) {
@@ -1357,7 +1361,11 @@ class BWGViewGalleryBox {
       'image_filmstrip_width'                 => $image_filmstrip_width,
       'image_filmstrip_height'                => $image_filmstrip_height,
       'lightbox_info_margin'                  => $theme_row->lightbox_info_margin,
-      'bwg_share_url'                         => add_query_arg(array('curr_url' => urlencode($current_url), 'image_id' => ''), WDWLibrary::get_share_page()),
+      'bwg_share_url'                         => add_query_arg(array(
+                                                                 'gallery_id' => $gallery_id,
+                                                                 'image_id' => '',
+                                                                 'curr_url' => $current_url,
+                                                               ), WDWLibrary::get_share_page()),
       'bwg_share_image_url'                   => urlencode(BWG()->upload_url),
       'slideshow_interval'                    => $params['popup_interval'],
       'open_with_fullscreen'                  => $params['popup_fullscreen'],
@@ -1368,7 +1376,6 @@ class BWGViewGalleryBox {
       'is_pro'                                => BWG()->is_pro,
       'enable_addthis'                        => $params['enable_addthis'],
       'addthis_profile_id'                    => $params['addthis_profile_id'],
-      'share_url'                             => $share_url,
       'current_pos'                           => $current_pos,
       'current_image_key'                     => $current_image_key,
       'slideshow_effect_duration'             => $params['popup_effect_duration'],

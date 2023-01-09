@@ -6,7 +6,7 @@ use CreativeMail\CreativeMail;
 use CreativeMail\Exceptions\CreativeMailException;
 use CreativeMail\Helpers\EnvironmentHelper;
 use CreativeMail\Helpers\OptionsHelper;
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Api\Models\ApiRequestItem;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use Exception;
@@ -58,13 +58,13 @@ class ContactsSyncService {
 		$creativ_email = CreativeMail::get_instance();
 
 		$creativ_email->get_api_manager()->get_api_background_process()->push_to_queue(
-            new ApiRequestItem(
-                'POST',
-                'application/json',
-                '/v1.0/contacts',
-                $jsonData
-            )
-        );
+			new ApiRequestItem(
+				'POST',
+				'application/json',
+				'/v1.0/contacts',
+				$jsonData
+			)
+		);
 
 		// Start the queue.
 		$creativ_email->get_api_manager()->get_api_background_process()->save()->dispatch();
@@ -75,7 +75,7 @@ class ContactsSyncService {
 		try {
 			if ( empty($contactModels) ) {
 				$exception = new CreativeMailException('No contacts provided or empty Contact Model');
-				RaygunManager::get_instance()->exception_handler($exception);
+				DatadogManager::get_instance()->exception_handler($exception);
 			}
 
 			if ( count($contactModels) > self::FAST_LANE_LIMIT ) {
@@ -86,7 +86,7 @@ class ContactsSyncService {
 				$this->fast_lane_contacts_sync($contactModels);
 			}
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		return true;
@@ -95,7 +95,7 @@ class ContactsSyncService {
 	private function fast_lane_contacts_sync( $contactModels ) {
 		if ( empty( $contactModels ) ) {
 			$exception = new CreativeMailException('No contacts provided or empty Contact Model');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		$url = EnvironmentHelper::get_app_gateway_url('wordpress/v1.0/contacts');
@@ -117,7 +117,7 @@ class ContactsSyncService {
 	private function slow_lane_contacts_sync( $contactModels ) {
 		if ( empty($contactModels) ) {
 			$exception = new CreativeMailException('No contacts provided or empty Contact Model');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		// 1. Convert to csv file.
@@ -135,13 +135,13 @@ class ContactsSyncService {
 		$csv_content = '';
 		if ( empty($contactModels) ) {
 			$exception = new CreativeMailException('Error trying to create the CSV to get the contacts data');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		$fd = fopen('php://temp/maxmemory:' . self::CSV_FILE_MAX_MEMORY_SIZE, 'w');
 		if ( false === $fd ) {
 			$exception = new CreativeMailException('No contacts provided or empty Contact Model');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		foreach ( $contactModels as $contactModel ) {
@@ -174,11 +174,11 @@ class ContactsSyncService {
 
 		if ( is_wp_error($response) ) {
 			$exception = new CreativeMailException('No contacts provided or empty Contact Model');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 		if ( ! $this->is_success_response($response) ) {
 			$exception = new CreativeMailException('No contacts provided or empty Contact Model');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		$json = json_decode(is_array($response) ? $response['body'] : '');
@@ -204,12 +204,12 @@ class ContactsSyncService {
 
 		if ( is_wp_error($response) ) {
 			$exception = new CreativeMailException('No contacts provided or empty Contact Model');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		if ( ! $this->is_success_response($response) ) {
 			$exception = new CreativeMailException('No contacts provided or empty Contact Model');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 
@@ -235,12 +235,12 @@ class ContactsSyncService {
 
 		if ( is_wp_error($response) ) {
 			$exception = new CreativeMailException('There was a WP_ERROR while trying to start import');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		if ( ! $this->is_success_response($response) ) {
 			$exception = new CreativeMailException('There was an error at the response.');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 

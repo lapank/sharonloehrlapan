@@ -1447,7 +1447,7 @@ function bwg_change_image_lightbox(current_key, key, data, from_effect) {
         var image_arr = decodeURIComponent(data[key]['image_url']).split("/");
         jQuery("#bwg_download").attr("download", image_arr[image_arr.length - 1].replace(/\?bwg=(\d+)$/, ""));
         /* Change image social networks urls.*/
-        var bwg_share_url = encodeURIComponent(gallery_box_data['bwg_share_url']) + "=" + data[key]['id'] + encodeURIComponent('#bwg'+gallery_box_data['gallery_id']+'/') + data[key]['id'];
+        var bwg_share_url = encodeURIComponent(gallery_box_data['bwg_share_url'].replace("image_id", "image_id=" + + data[key]['id']));
 
         if (is_embed) {
           var bwg_share_image_url = encodeURIComponent(data[key]['thumb_url']);

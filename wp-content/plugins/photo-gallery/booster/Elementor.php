@@ -1,10 +1,13 @@
 <?php
 
 /**
- * Class TWBElementor
+ * Class TWBBWGElementor
  */
-class TWBElementor {
+class TWBBWGElementor {
   private $booster;
+  private $post_published = 0;
+  private $post_id = 0;
+  private $page_speed_status;
 
   function __construct( $booster ) {
     $this->booster = $booster;
@@ -18,15 +21,28 @@ class TWBElementor {
    * @return void
    */
   public function scripts_styles() {
-    wp_enqueue_style('twb-open-sans', 'https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700,800&display=swap');
-    wp_enqueue_style(TenWebBooster::PREFIX . '-global', $this->booster->plugin_url . '/assets/css/global.css', array( 'twb-open-sans' ), TenWebBooster::VERSION);
-    if ( $this->booster->cta_button['button_color'] || $this->booster->cta_button['text_color'] ) {
-      wp_add_inline_style(TenWebBooster::PREFIX . '-global', '.twb-custom-button, .twb-custom-button:hover {background-color: ' . $this->booster->cta_button['button_color'] . ' !important; color: ' . $this->booster->cta_button['text_color'] . ' !important;}');
+    if ( !$this->post_published ) {
+      return;
     }
 
-    wp_enqueue_script(TenWebBooster::PREFIX . '-elementor', $this->booster->plugin_url . '/assets/js/elementor.js', array('jquery'), TenWebBooster::VERSION);
-    wp_localize_script(TenWebBooster::PREFIX . '-elementor', 'twb', array(
+    wp_enqueue_style('twb-open-sans', 'https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700,800&display=swap');
+    wp_enqueue_style('two_speed_dark_css', $this->booster->plugin_url . '/assets/css/elementor_dark.css', array( 'twb-open-sans', 'elementor-editor-dark-mode' ), TenWebBoosterBWG::VERSION);
+    if ( $this->booster->cta_button['button_color'] || $this->booster->cta_button['text_color'] ) {
+      wp_add_inline_style(TenWebBoosterBWG::PREFIX . '-elementor', '.twb-custom-button, .twb-custom-button:hover {background-color: ' . $this->booster->cta_button['button_color'] . ' !important; color: ' . $this->booster->cta_button['text_color'] . ' !important;}');
+    }
+    wp_enqueue_style(TenWebBoosterBWG::PREFIX . '-global', $this->booster->plugin_url . '/assets/css/global.css', array( 'twb-open-sans' ), TenWebBoosterBWG::VERSION);
+
+    $required_scripts = array( 'jquery' );
+    wp_enqueue_script(TenWebBoosterBWG::PREFIX . '-circle', $this->booster->plugin_url . '/assets/js/circle-progress.js', $required_scripts, '1.2.2');
+    wp_enqueue_script(TenWebBoosterBWG::PREFIX . '-global', $this->booster->plugin_url . '/assets/js/global.js', array('jquery'), TenWebBoosterBWG::VERSION);
+    wp_localize_script(TenWebBoosterBWG::PREFIX . '-global', 'twb', array(
       'title' => $this->booster->cta_button['section_label'],
+      'nonce' => wp_create_nonce('twb_nonce'),
+      'ajax_url' => admin_url('admin-ajax.php'),
+      'plugin_url' => $this->booster->plugin_url,
+      'href' => $this->booster->submenu_url,
+      'checking' => __('Checking...', 'twb-hidden'),
+      'notoptimized' => __('Not optimized', 'twb-hidden'),
     ));
   }
 
@@ -36,7 +52,15 @@ class TWBElementor {
    * @param \Elementor\Core\DocumentTypes\PageBase $document The PageBase document instance.
    */
   public function register_document_controls( $document ) {
-    if ( ! $document instanceof \Elementor\Core\DocumentTypes\PageBase || ! $document::get_property( 'has_elements' ) || !empty($document->get_section_controls('twb_optimize_section')) ) {
+    global $post;
+    if ( !empty($post) ) {
+        $this->post_id = $post->ID;
+        if ( get_post_status($this->post_id) == 'publish' ) {
+          $this->post_published = 1;
+        }
+    }
+
+    if ( ! $this->post_published || ! $document instanceof \Elementor\Core\DocumentTypes\PageBase || ! $document::get_property( 'has_elements' ) || !empty($document->get_section_controls('twb_optimize_section')) ) {
       return;
     }
 
@@ -50,15 +74,23 @@ class TWBElementor {
         'tab' => 'twb_optimize',
       ]
     );
-
-    $content = TWBLibrary::twb_button_template( $this->booster );
-    $content .=  TWBLibrary::dismiss_info_content( $this->booster );
+    $this->page_speed_status = TWBBWGLibrary::get_page_speed_status();
     $classname = 'twb_elementor_settings_content twb_optimized';
-    $label_html = '';
-    if ( $section_label != '' ) {
-      $label_html = '<p class="twb_elementor_control_title">' . esc_html($section_label) . '</p>';
+    if ( $this->page_speed_status == "completed" ) {
+        $content = $this->comleted_content();
+        $label_html = '<p class="twb_elementor_control_title twb_not_optimized">' . __('Not optimized', 'tenweb-booster') . '</p>';
+    } elseif ( $this->page_speed_status == "notstarted" ) {
+        $content = $this->notstarted_content();
+        $classname = 'twb_elementor_settings_content twb-optimized';
+        $label_html = '<p class="twb_elementor_control_title twb_not_optimized">' . __('PageSpeed Score', 'tenweb-booster') . '</p>';
+    } elseif ( $this->page_speed_status == 'error' ) {
+        $content = $this->error_content();
+        $label_html = '<p class="twb_elementor_control_title twb_not_optimized">' . __('Not optimized', 'tenweb-booster') . '</p>';
+    } else {
+        $content = $this->inprogress_content();
+        $label_html = '<p class="twb_elementor_control_title"><span class="twb_inprogress"></span>' . __('Checking...', 'tenweb-booster') . '</p>';
     }
-
+    $content .=  TWBBWGLibrary::dismiss_info_content( $this->booster );
     $document->add_control(
       'twb_raw_html',
       [
@@ -71,4 +103,138 @@ class TWBElementor {
 
     $document->end_controls_section();
   }
+
+  /**
+   * Content html which score counted.
+   *
+   * @param bool $hide hide content in case of not counted
+   *
+   * @return string html content
+  */
+  public function comleted_content( $hide = 0 ) {
+
+    if ( !$this->post_id ) {
+      return false;
+    }
+
+    $post_id = $this->post_id;
+    $page_score = get_post_meta( $post_id, 'two_page_speed' );
+
+    $score = array(
+      'mobile_score' => 0,
+      'mobile_tti' => 0,
+      'desktop_score' => 0,
+      'desktop_tti' => 0,
+    );
+
+    if ( !empty($page_score) ) {
+      $page_score = end($page_score);
+      if ( !empty($page_score['previous_score']) && !empty($page_score['previous_score']['mobile_score']) ) {
+        $page_score = $page_score['previous_score'];
+        $score = array(
+          'mobile_score' => $page_score['mobile_score'],
+          'mobile_tti' => $page_score['mobile_tti'],
+          'desktop_score' => $page_score['desktop_score'],
+          'desktop_tti' => $page_score['desktop_tti'],
+        );
+      }
+    }
+
+
+    $page_title = get_the_title( $post_id );
+    $title = sprintf(__('%s page', 'tenweb-booster'), '<i>'.$page_title.'</i>');
+    $url = $this->booster->submenu_url;
+    ob_start(); ?>
+    <script>
+      if ( typeof twb_draw_score_circle == 'function') {
+        jQuery('.twb-score-circle').each(function () {
+          twb_draw_score_circle(this);
+        });
+      }
+    </script>
+    <?php
+    TWBBWGLibrary::score($score, $url, $post_id, $title, $hide, 40);
+    return ob_get_clean();
+  }
+
+  /**
+   * Content html which score counted with error.
+   *
+   * @return string html content
+  */
+  public function error_content() {
+    if ( !$this->post_id ) {
+      return false;
+    }
+
+    $post_id = $this->post_id;
+    $page_title = get_the_title( $post_id );
+    $title = sprintf(__('%s page', 'tenweb-booster'), '<i>'.$page_title.'</i>');
+    $url = $this->booster->submenu_url;
+
+    $score = array(
+      'error' => 1,
+    );
+
+    ob_start();
+    TWBBWGLibrary::score($score, $url, $post_id, $title, 0, 40);
+    return ob_get_clean();
+  }
+
+  /**
+   * Content html which score not counted and started.
+   *
+   * @return string html content
+  */
+  public function notstarted_content() {
+    if ( !$this->post_id ) {
+      return false;
+    }
+
+    $post_id = $this->post_id;
+    ob_start();
+    ?>
+    <div class="twb-notoptimized">
+      <p class="twb_status_description"><?php _e('PageSpeed score is an essential attribute to your website’s performance. It affects both the user experience and SEO rankings.', 'tenweb-booster') ?></p>
+      <div class="twb_check_score_button_cont">
+      <a onclick="twb_check_score(this)" data-post_id="<?php echo esc_attr($post_id); ?>"
+         data-initiator="admin-bar" target="_blank"
+         class="twb_check_score_button"><?php _e('Check PageSpeed Score', 'tenweb-booster') ?></a>
+      </div>
+    </div>
+    <div class="twb-optimized twb-hidden">
+      <?php
+      echo $this->comleted_content();
+      ?>
+    </div>
+    <div class="twb-optimizing twb-hidden">
+      <?php
+      echo $this->inprogress_content();
+      ?>
+    </div>
+    <?php
+    return ob_get_clean();
+  }
+
+  /**
+   * Content html which score in progress.
+   *
+   * @return string html content
+  */
+  public function inprogress_content() {
+    if ( !$this->post_id ) {
+      return false;
+    }
+
+    $post_id = $this->post_id;
+    $page_title = get_the_title( $post_id );
+    ob_start();
+    ?>
+    <div class="twb_admin_bar_menu_content twb-optimizing <?php echo $this->page_speed_status == 'notstarted' ? 'twb-hidden' : ''; ?>">
+      <p class="twb_status_description"><?php echo sprintf(__('We are checking the PageSpeed score of your %s page.', 'tenweb-booster'), '<i>'.esc_html($page_title).'</i>'); ?></p>
+    </div>
+    <?php
+    return ob_get_clean();
+  }
+
 }

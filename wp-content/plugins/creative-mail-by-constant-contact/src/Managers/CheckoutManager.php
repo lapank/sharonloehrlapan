@@ -5,13 +5,13 @@ namespace CreativeMail\Managers;
 use CreativeMail\CreativeMail;
 use CreativeMail\Helpers\EnvironmentHelper;
 use CreativeMail\Helpers\OptionsHelper;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Models\CartData;
 use CreativeMail\Models\Checkout;
 use CreativeMail\Models\CheckoutSave;
 use CreativeMail\Models\Coupon;
 use CreativeMail\Models\OrderBillingPaymentDetails;
 use CreativeMail\Models\OrderLineItem;
-use CreativeMail\Models\User;
 use CreativeMail\Modules\Contacts\Models\OptActionBy;
 use CreativeMail\Models\Order;
 use CreativeMail\Models\OrderBilling;
@@ -211,7 +211,7 @@ final class CheckoutManager {
 				CreativeMail::get_instance()->get_database_manager()->remove_checkout_data($checkout_data->checkout_uuid);
 			}
 		} catch ( Exception $e ) {
-			RaygunManager::get_instance()->exception_handler($e);
+			DatadogManager::get_instance()->exception_handler($e);
 		}
 	}
 
@@ -566,7 +566,7 @@ final class CheckoutManager {
 				}
 			}
 		} catch ( Exception $e ) {
-			RaygunManager::get_instance()->exception_handler( $e );
+			DatadogManager::get_instance()->exception_handler( $e );
 		}
 
 		return $data;
@@ -744,7 +744,7 @@ final class CheckoutManager {
 				);
 			}
 		} catch ( Exception $e ) {
-			RaygunManager::get_instance()->exception_handler( $e );
+			DatadogManager::get_instance()->exception_handler( $e );
 		}
 	}
 
@@ -767,7 +767,7 @@ final class CheckoutManager {
 				)
 			);
 		} catch ( Exception $e ) {
-			RaygunManager::get_instance()->exception_handler( $e );
+			DatadogManager::get_instance()->exception_handler( $e );
 		}
 	}
 
@@ -978,7 +978,7 @@ final class CheckoutManager {
 						}
 					}
 				} catch ( Exception $ex ) {
-					RaygunManager::get_instance()->exception_handler( $ex );
+					DatadogManager::get_instance()->exception_handler( $ex );
 				}
 
 				$src      = wc_placeholder_img_src();
@@ -1018,7 +1018,7 @@ final class CheckoutManager {
 				)
 			);
 		} catch ( Exception $e ) {
-			RaygunManager::get_instance()->exception_handler( $e );
+			DatadogManager::get_instance()->exception_handler( $e );
 		}
 	}
 

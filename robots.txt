@@ -5,9 +5,17 @@ User-agent: AdsBot-Google
 Disallow: /feed/
 Disallow: /bwg_gallery/
 Disallow: /bwg_gallery-sitemap.xml
+Disallow: /*?*
 Disallow: /*}$
 Disallow: /category/
+Disallow: /?}$
+Disallow: /sample-page/
+Disallow: /?p=1
+Disallow: /hello-world/
+Disallow: /?author=1
+Disallow: /author/admin/
+Disallow: /?s={search_term_string}
 
-Sitemap: https://sharonloehrlapan.com/sitemap_index.xml
+Sitemap: https://sharonloehrlapan.com/sitemap.xml
 # ---------------------------
 # END YOAST BLOCK

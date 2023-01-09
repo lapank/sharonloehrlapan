@@ -146,7 +146,67 @@ function twb_install_plugin( that ) {
       speed_ajax_nonce: twb.speed_ajax_nonce
     },
     success: function ( data ) {
-      jQuery(".twb-speed-header").html(data).find(".wrap").remove();;
+      jQuery(".twb-speed-header").html(data).find(".wrap").remove();
+      jQuery(".twb-speed-footer").remove();
+    }
+  });
+}
+
+/**
+ * Run ajax action and Sign Up and connect to the Dashboard
+ *
+ * @param that object
+ */
+function twb_sign_up_connect_dashboard( that ) {
+  if ( jQuery(that).hasClass("twb-disable-link") ) {
+    return false;
+  }
+
+  var parent_slug = jQuery(that).data("parent_slug");
+  var slug = jQuery(that).data("slug");
+  var is_plugin = jQuery(that).data("is_plugin");
+
+  jQuery(".twb-error-msg").remove();
+  jQuery(that).addClass('twb-disable-link');
+  jQuery(that).html('<div class="speed-loader-blue"></div>');
+
+  jQuery.ajax( {
+    url: ajaxurl,
+    type: "POST",
+    dataType: "text",
+    data: {
+      action: "twb",
+      task: "sign_up_connect_dashboard",
+      parent_slug: parent_slug,
+      slug: slug,
+      is_plugin: is_plugin,
+      speed_ajax_nonce: twb.speed_ajax_nonce
+    },
+    success: function (result) {
+      jQuery('<div id="twb-temp" style="display: none;" />').insertAfter( ".twb-speed-header" ).html(result).find(".wrap").remove();
+      result = jQuery("#twb-temp").html();
+      if ( !isValidJSONString(result) ) {
+        jQuery(that).text(twb.sign_up);
+        jQuery(that).removeClass('twb-disable-link');
+        return;
+      }
+      var data = JSON.parse(result);
+      if ( data['status'] === 'success' ) {
+        function htmlDecode(input) {
+          var doc = new DOMParser().parseFromString(input, "text/html");
+          return doc.documentElement.textContent;
+        }
+        window.location.href = htmlDecode(data['booster_connect_url']);
+      }
+      else {
+        jQuery(that).text(twb.sign_up);
+        jQuery(that).removeClass('twb-disable-link');
+        return;
+      }
+    },
+    error: function (xhr) {
+      jQuery(that).text(twb.sign_up);
+      jQuery(that).removeClass('twb-disable-link');
     }
   });
 }
@@ -350,7 +410,7 @@ function twb_get_google_score( that, url, last_api_key_index ) {
           var data = JSON.parse(result);
           if ( data['error'] === 1 ) {
             if ( typeof data['last_api_key_index'] !== 'undefined' ) {
-              twb_get_google_score(that, home_url, data['last_api_key_index'] );
+              twb_get_google_score(that, twb.home_url, data['last_api_key_index'] );
               return;
             }
             var msg = '';

@@ -4,7 +4,7 @@ namespace CreativeMail\Modules\Contacts\Handlers;
 
 define('CE4WP_NF_EVENTTYPE', 'WordPress - NinjaForms');
 
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use CreativeMail\Modules\Contacts\Models\OptActionBy;
 use Exception;
@@ -165,7 +165,7 @@ final class NinjaFormsPluginHandler extends BaseContactFormPluginHandler {
 
 			$this->upsertContact($this->convertToContactModel($ninjaContact));
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 
@@ -262,7 +262,7 @@ final class NinjaFormsPluginHandler extends BaseContactFormPluginHandler {
 											array_push($contactsArray, $contactModel);
 										}
 									} catch ( Exception $exception ) {
-										RaygunManager::get_instance()->exception_handler($exception);
+										DatadogManager::get_instance()->exception_handler($exception);
 										continue;
 									}
 									if ( isset($limit) && count($contactsArray) >= $limit ) {
@@ -282,7 +282,7 @@ final class NinjaFormsPluginHandler extends BaseContactFormPluginHandler {
 				}
 			}
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 		return null;
 	}

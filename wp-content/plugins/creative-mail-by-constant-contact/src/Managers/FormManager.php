@@ -6,6 +6,7 @@ namespace CreativeMail\Managers;
 use CreativeMail\CreativeMail;
 use CreativeMail\Clients\CreativeMailClient;
 use CreativeMail\Helpers\OptionsHelper;
+use CreativeMail\Managers\Logs\DatadogManager;
 use Exception;
 
 /**
@@ -72,7 +73,7 @@ class FormManager {
 			// Insert submission into database.
 			CreativeMail::get_instance()->get_database_manager()->insert_contact($data);
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		wp_send_json_success();

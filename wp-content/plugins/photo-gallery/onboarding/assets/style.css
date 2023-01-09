@@ -1,0 +1,279 @@
+.bwg_onboarding_container {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+  top: 0;
+  left: 0;
+}
+
+.bwg_onboarding_container * {
+  font-family: 'Open Sans';
+}
+
+#adminmenumain,
+#wpadminbar,
+#wpfooter {
+  display: none!important;
+}
+
+.bwg_onboarding_header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  padding: 12px 20px 12px 60px;
+  box-sizing: border-box;
+  border-bottom: 2px solid #E4E4E4;
+}
+
+.bwg_onboarding_header_logo_cont{
+  flex-grow: 1;
+}
+
+.bwg_onboarding_close{
+  width: 16px;
+  height: 16px;
+  background: url("images/close.png") center center no-repeat;
+  background-size: 13px;
+  cursor: pointer;
+}
+
+.bwg_onboarding_content {
+  display: flex;
+  height: 100%;
+}
+
+.bwg_onboarding_welcome_left,
+.bwg_onboarding_first_gallery_left,
+.bwg_onboarding_signup_left {
+  width: 50%;
+  padding: 45px 60px;
+  box-sizing: border-box;
+}
+
+.bwg_onboarding_welcome_left h2 {
+  font: normal normal 800 30px/44px Open Sans;
+  letter-spacing: 0.25px;
+  color: #323A45;
+  margin: 0;
+  padding: 0;
+}
+
+.bwg_onboarding_welcome_left p.bwg_onboarding_welcome_descr,
+.bwg_onboarding_first_gallery_left p.bwg_onboarding_first_gallery_descr,
+.bwg_onboarding_signup_left p.bwg_onboarding_signup_descr {
+  margin: 5px 0 30px 0;
+}
+
+.bwg_onboarding_welcome_left p,
+.bwg_onboarding_first_gallery_left p,
+.bwg_onboarding_signup_left p {
+  font: normal normal normal 14px/22px Open Sans;
+  letter-spacing: 0px;
+  color: #1D2327;
+  margin: 0;
+  padding: 0;
+}
+
+.bwg_onboarding_first_gallery_left .bwg_onboarding_first_gallery_steps,
+.bwg_onboarding_welcome_left .bwg_onboarding_welcome_steps {
+  margin-top: 20px;
+  margin-bottom: 68px;
+}
+
+.bwg_onboarding_welcome_left .bwg_onboarding_welcome_steps span,
+.bwg_onboarding_first_gallery_left .bwg_onboarding_first_gallery_steps span,
+.bwg_onboarding_signup_left .bwg_onboarding_signup_steps span {
+  display: block;
+  padding: 0 0 0 26px;
+  background: url("images/green_tick.png") 0 0 no-repeat;
+  background-size: 20px;
+  font: normal normal 600 14px/22px Open Sans;
+  letter-spacing: 0px;
+  color: #323A45;
+  margin: 0 0 12px 0;
+}
+
+.bwg_onboarding_welcome_left a.bwg_onboarding_button,
+.bwg_onboarding_first_gallery_left .bwg_onboarding_button,
+.bwg_onboarding_signup_left a.bwg_onboarding_button {
+  display: block;
+  background: #22B339 0% 0% no-repeat padding-box;
+  border-radius: 6px;
+  width: 100%;
+  height: 40px;
+  text-align: center;
+  font: normal normal 600 14px/40px Open Sans;
+  letter-spacing: 0px;
+  color: #FFFFFF;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.bwg_onboarding_first_gallery_left .bwg_onboarding_button,
+.bwg_onboarding_signup_left a.bwg_onboarding_button {
+  margin-top: 30px;
+}
+
+.bwg_onboarding_first_gallery_left .bwg_onboarding_button {
+  border:none;
+}
+
+.bwg_onboarding_signup_left input,
+.bwg_onboarding_first_gallery_left input {
+  display: block;
+  width: 100%;
+  height: 40px;
+  /* UI Properties */
+  background: #FFFFFF 0% 0% no-repeat padding-box;
+  border: 1px solid #323A4533;
+  border-radius: 6px;
+  margin: 90px 0 0 0;
+}
+
+.bwg_onboarding_container input::placeholder {
+  font: normal normal normal 14px/20px Open Sans;
+  letter-spacing: 0px;
+  color: #1D232780;
+  opacity: 1;
+}
+
+
+.bwg_onboarding_container .bwg_onboarding_first_gallery_left input {
+  margin: 60px 0 0 0;
+  padding: 10px 16px;
+}
+
+#bwg_add_first_gallery{
+  margin-top: 30px;
+}
+
+
+.bwg_onboarding_welcome_right,
+.bwg_onboarding_signup_right {
+  width: 50%;
+  background: url("images/welcome_banner.png") no-repeat;
+  background-size: cover;
+  border: 2px solid #E4E4E4;
+  border-top: none;
+}
+
+.bwg_onboarding_signup_right h2,
+.bwg_onboarding_first_gallery_right h2,
+.bwg_onboarding_first_gallery_left h2,
+.bwg_onboarding_signup_left h2 {
+  font: normal normal 800 18px/28px Open Sans;
+  letter-spacing: 0px;
+  color: #1D2327;
+  margin: 0;
+}
+
+.bwg_onboarding_signup_left .bwg_onboarding_signup_footer_info {
+  margin-top: 15px;
+}
+
+.bwg_onboarding_signup_left .bwg_onboarding_signup_footer_info p {
+  text-align: center;
+  font: normal normal normal 12px/18px Open Sans;
+  letter-spacing: 0px;
+  color: #323A45;
+  padding: 0;
+  margin: 0 0 10px 0;
+}
+
+.bwg_onboarding_signup_left .bwg_onboarding_signup_footer_info p a {
+  font: normal normal 600 12px/18px Open Sans;
+  letter-spacing: 0px;
+  color: #323A45;
+}
+
+.bwg_onboarding_signup_right .skip_to_PG {
+  position: absolute;
+  bottom: 15px;
+  right: 20px;
+  text-align: right;
+  text-decoration: underline;
+  font: normal normal 600 12px/18px Open Sans;
+  letter-spacing: 0px;
+  color: #323A45;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.bwg_onboarding_first_gallery_right {
+  width: 50%;
+  background: url("images/first_gallery_banner.png") no-repeat;
+  background-size: cover;
+  border: 2px solid #E4E4E4;
+  border-top: none;
+}
+
+.bwg_onboarding_container .bwg_onboarding_button_loading {
+  opacity: 0.5;
+}
+
+.bwg_onboarding_container .bwg_onboarding_button_loading span {
+  background: url(images/loader_small.svg) center center no-repeat #22B339;
+  background-size: 18px;
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  animation: rotation 1s infinite linear;
+  margin-top: 10px;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+.bwg_hidden{
+  display: none;
+}
+
+.bwg_onboarding_first_gallery_left p.bwg_error,
+.bwg_onboarding_signup_left p.bwg_error {
+  position: absolute;
+  color:#FF0000;
+  font-size: 12px;
+}
+
+.bwg_onboarding_signup_left .bwg_onboarding_signup_done_message {
+  position: relative;
+  height: 53px;
+  background: #22B3390D 0% 0% no-repeat padding-box;
+  border-radius: 6px;
+  font: italic normal normal 12px/18px Open Sans;
+  letter-spacing: 0.1px;
+  color: #323A45;
+  padding: 9px 16px;
+  box-sizing: border-box;
+  margin-top: 29px;
+  margin-left: 10px;
+}
+
+.bwg_onboarding_signup_left.bwg_onboarding_signup_done_left input {
+  margin-top: 20px;
+  background: #E6E7E880 0% 0% no-repeat padding-box;
+  border: 1px solid #323A4533;
+  border-radius: 6px;
+  opacity: 1;
+}
+
+.bwg_onboarding_signup_done_message img {
+  position: absolute;
+  left: -10px;
+  top: -10px;
+  width: 13px;
+  border-radius: 13px;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0px 5px 6px #00000029;
+  background-color: #22B3391A;
+  padding: 1px;
+}
+

@@ -1,7 +1,6 @@
 <?php
 
 class WDWLibrary {
-
   public static $shortcode_ids = array();
 
   public static $thumb_dimansions;
@@ -749,8 +748,8 @@ class WDWLibrary {
 
   public static function get_share_page() {
     $share_page = get_posts(array('post_type' => 'bwg_share'));
-    if ($share_page) {
-      return get_permalink(current($share_page));
+    if ( $share_page ) {
+      $share_page = current($share_page);
     }
     else {
       $bwg_post_args = array(
@@ -759,8 +758,9 @@ class WDWLibrary {
         'post_type' => 'bwg_share'
       );
       $share_page = wp_insert_post($bwg_post_args);
-      return get_permalink($share_page);
     }
+
+    return get_permalink($share_page);
   }
 
   public static function get_google_fonts() {
@@ -1255,7 +1255,6 @@ class WDWLibrary {
     global $wpdb;
     $bwg_search = trim(self::get('bwg_search_' . $bwg));
     $prepareArgs = array();
-
     if ( BWG()->options->front_ajax == "1" ) {
       $sort_by = trim( WDWLibrary::get('sort_by_' . $bwg, $sort_by ) );
       $filter_teg = trim( WDWLibrary::get('filter_tag_' . $bwg) );
@@ -1299,8 +1298,8 @@ class WDWLibrary {
 
     $items_in_page = $images_per_page;
     $limit = 0;
-    $page_number = self::get('page_number_' . $bwg, 0, 'intval');
 
+    $page_number = self::get('page_number_' . $bwg, 0, 'intval');
     if ( !empty($page_number) ) {
       if ( $page_number > 1 ) {
         $items_in_page = $load_more_image_count;
@@ -1312,12 +1311,11 @@ class WDWLibrary {
       $bwg_random_seed = rand();
       $GLOBALS['bwg_random_seed_' . $bwg] = $bwg_random_seed;
     }
-
-    if($gallery_id) {
+    if ( $gallery_id ) {
       $where .= ' AND image.gallery_id = %d ';
       $prepareArgs[] = $gallery_id;
     }
-    if($tag) {
+    if ( $tag ) {
       $where .= ' AND tag.tag_id = %d ';
       $prepareArgs[] = $tag;
     }
@@ -1331,7 +1329,6 @@ class WDWLibrary {
     $join = $tag ? ' LEFT JOIN ' . $wpdb->prefix . 'bwg_image_tag as tag ON image.id=tag.image_id' : '';
 
     $filter_tags_name = self::get($tag_input_name, '', 'esc_sql', 'REQUEST');
-
     if ( $filter_tags_name ) {
       $join .= ' LEFT JOIN (SELECT GROUP_CONCAT(tag_id order by tag_id SEPARATOR ",") AS tags_combined, image_id FROM  ' . $wpdb->prefix . 'bwg_image_tag' . ($gallery_id ?  $wpdb->prepare(' WHERE gallery_id=%d', $gallery_id) : '') . ' GROUP BY image_id) AS tags ON image.id=tags.image_id';
       if ( !BWG()->options->tags_filter_and_or ) {
@@ -1839,7 +1836,10 @@ class WDWLibrary {
         }
         $image->set_quality(BWG()->options->image_quality);
         $image->resize($new_width, $new_height);
-        $image->maybe_exif_rotate();
+        /* Function available since WP 5.3.0 version */
+        if ( method_exists($image, 'maybe_exif_rotate') ) {
+          $image->maybe_exif_rotate();
+        }
         $saved = $image->save($destination);
         // Update the resized image resolution.
         if ( $image_id ) {
@@ -3575,5 +3575,42 @@ class WDWLibrary {
     $string = str_replace($code_entities_match, $code_entities_replace, $string);
     return $string;
   }
-}
 
+  /**
+   * Generate gallery to pro button.
+  */
+  public static function gallery_to_pro_button() {
+    $premium_link = WDWLibrary::pro_button_link();
+    if ( $premium_link ) {
+      ob_start();
+      ?>
+      <a class="bwg_gallery_to_pro_button" href="<?php echo esc_url($premium_link); ?>" target="_blank">
+        <?php _e('Upgrade to Pro', 'photo-gallery'); ?>
+      </a>
+      <?php
+      echo ob_get_clean();
+    }
+  }
+
+  public static function pro_button_link($slug = 'From Gallery') {
+    if ( ( defined('TENWEB_CONNECTED_SPEED') &&
+        class_exists('\Tenweb_Authorization\Login') &&
+        \Tenweb_Authorization\Login::get_instance()->check_logged_in() &&
+        \Tenweb_Authorization\Login::get_instance()->get_connection_type() == TENWEB_CONNECTED_SPEED ) ||
+      ( defined('TENWEB_SO_HOSTED_ON_10WEB') && TENWEB_SO_HOSTED_ON_10WEB ) ) {
+      $url = 'https://my.10web.io/upgrade-plan?send_event=1&tenweb_action=' . $slug;
+    }
+    elseif ( class_exists('\TenWebOptimizer\OptimizerUtils') ) {
+      $magic_data = get_option("bwg_magic_data");
+      $url = 'https://my.10web.io/sign-up?subscr_id=321&plugin_id=101&navigate_to=upgrade-plan&tenweb_action=' . $slug;
+      if ( !empty($magic_data['magic_data']) ) {
+        $url .= '&magic_data=' . $magic_data['magic_data'];
+      }
+    }
+    else {
+      $url = 'https://my.10web.io/sign-up?subscr_id=321&plugin_id=101&navigate_to=upgrade-plan&tenweb_action=' . $slug;
+    }
+
+    return $url;
+  }
+}

@@ -3,7 +3,7 @@
 
 namespace CreativeMail\Helpers;
 
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\BadFormatException;
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
@@ -81,10 +81,19 @@ final class EncryptionHelper {
 					return Crypto::decrypt($encrypted, self::get_encryption_key());
 				}
 			} catch ( Exception $e ) {
-				RaygunManager::get_instance()->exception_handler($e);
+				DatadogManager::get_instance()->exception_handler($e);
 			}
 		}
 
 		return $encrypted;
+	}
+
+	public static function generate_x_builder_id() {
+		$builder_id = sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', wp_rand(0, 65535), wp_rand(0, 65535), wp_rand(0, 65535), wp_rand(16384, 20479), wp_rand(32768, 49151), wp_rand(0, 65535), wp_rand(0, 65535), wp_rand(0, 65535));
+
+		if ( function_exists('com_create_guid') === true ) {
+			$builder_id = trim(com_create_guid(), '{}');
+		}
+		return $builder_id;
 	}
 }

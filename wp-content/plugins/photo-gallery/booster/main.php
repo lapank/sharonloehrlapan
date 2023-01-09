@@ -1,7 +1,7 @@
 <?php
-class TenWebBooster {
+class TenWebBoosterBWG {
   const VERSION = '1.0.0';
-  const PREFIX = 'twb';
+  const PREFIX = 'twbbwg';
   const BOOSTER_PlUGIN_FILE = 'tenweb-speed-optimizer/tenweb_speed_optimizer.php';
 
   public $submenu = array(
@@ -10,7 +10,7 @@ class TenWebBooster {
     'icon' => '',
   );
   public $page = array(
-    'section_booster_title' => 'Optimize images and boost PageSpeed score',
+    'section_booster_title' => 'Optimize all images and galleries',
     'section_booster_desc' => 'Use the free 10Web Booster plugin to automatically optimize your images and boost PageSpeed score.',
     'section_booster_success_title' => 'Optimize all images',
     'section_booster_success_desc' => 'Speed up the entire website',
@@ -20,7 +20,7 @@ class TenWebBooster {
   );
 
   public $cta_button = array(
-    'section_label' => '10Web Booster',
+    'section_label' => 'PageSpeed score',
     'label' => 'Check PageSpeed score',
     'button_color' => '',
     'text_color' => '',
@@ -34,7 +34,6 @@ class TenWebBooster {
   private $list = TRUE;
 
   public $slug = '';
-  private $abspath = '';
   public $plugin_dir = '';
   public $plugin_url = '';
   public $booster_plugin_status = 0; //0-not installed, 1-not active, 2-active
@@ -60,7 +59,7 @@ class TenWebBooster {
     if ( $this->submenu['parent_slug'] || !$this->is_plugin ) {
       add_action('admin_menu', array( $this, 'add_submenu' ));
     }
-    add_action('wp_ajax_' . self::PREFIX, array( $this, 'admin_ajax' ));
+    add_action('wp_ajax_twb', array( $this, 'admin_ajax' ));
     add_action('wp_ajax_twb_check_score', array( $this, 'check_score' ));
     add_action('wp_ajax_twb_notif_check', array( $this, 'notif_check' ));
 
@@ -70,19 +69,19 @@ class TenWebBooster {
         add_action('admin_bar_menu', array( $this, 'admin_bar_menu' ), 100);
       }
 
-      if ( $this->elementor ) {
+      if ( $this->elementor && !class_exists('TWBElementor')  ) {
         require_once('Elementor.php');
-        new TWBElementor($this);
+        new TWBBWGElementor($this);
       }
 
-      if ( $this->gutenberg ) {
+      if ( $this->gutenberg && !class_exists('TWBGutenberg')  ) {
         require_once('Gutenberg.php');
-        new TWBGutenberg($this);
+        new TWBBWGGutenberg($this);
       }
 
-      if ( $this->list ) {
+      if ( $this->list && !class_exists('TWBList') ) {
         require_once('List.php');
-        $this->list = TWBList($this);
+        $this->list = TWBBWGList($this);
       }
     }
   }
@@ -98,6 +97,7 @@ class TenWebBooster {
     }
     $page = sanitize_text_field($_POST['action']);
     $allowed_pages = array( 'twb' );
+
     if ( !in_array($page, $allowed_pages) ) {
       return;
     }
@@ -120,7 +120,7 @@ class TenWebBooster {
     }
     $post_id = isset($_POST["post_id"]) ? sanitize_text_field($_POST["post_id"]) : 0;
 
-    echo TWBLibrary::check_score($post_id);
+    echo TWBBWGLibrary::check_score($post_id);
     die();
   }
 
@@ -141,7 +141,7 @@ class TenWebBooster {
     }
 
     require_once('AdminBar.php');
-    new TWBAdminBar('', $this);
+    new TWBBWGAdminBar('', $this);
   }
 
   private function define_params($params) {
@@ -168,22 +168,19 @@ class TenWebBooster {
       }
     }
     $admin_page = admin_url((isset($params['is_plugin']) && !$params['is_plugin']) ? 'themes.php' : 'admin.php');
-    $this->submenu_url = add_query_arg( array('page' => TenWebBooster::PREFIX . '_' . $this->slug), $admin_page );
-
-    $this->abspath = $this->get_abspath();
+    $this->submenu_url = add_query_arg( array('page' => self::PREFIX . '_' . $this->slug), $admin_page );
   }
 
   private function change_defaults( $params = array()) {
     foreach ( $params as $key => $param ) {
-      if ( is_array($param) ) {
-        foreach ( $param as $par_key => $par ) {
-          if ( isset($this->$key[$par_key]) ) {
-            $this->$key[$par_key] = sanitize_text_field($par);
+      if ( isset($this->$key) ) {
+        if ( is_array($param) ) {
+          foreach ( $param as $par_key => $par ) {
+            $param[$par_key] = sanitize_text_field($par);
           }
+          $this->$key = array_merge($this->$key, $param);
         }
-      }
-      else {
-        if ( isset($this->$key) ) {
+        else {
           $this->$key = sanitize_text_field($param);
         }
       }
@@ -245,7 +242,7 @@ class TenWebBooster {
    */
   public function admin_page() {
     require_once($this->plugin_dir . '/controller.php');
-    $controller = new BoosterController($this);
+    $controller = new BoosterControllerBWG($this);
     $controller->execute();
   }
 
@@ -256,7 +253,7 @@ class TenWebBooster {
    */
   public function top_banner($params = array()) {
     require_once($this->plugin_dir . '/controller.php');
-    $controller = new BoosterController($this);
+    $controller = new BoosterControllerBWG($this);
     $controller->execute('top_banner', $params);
   }
 
@@ -267,7 +264,7 @@ class TenWebBooster {
    */
   public function admin_bar_menu( $wp_admin_bar ) {
     require_once('AdminBar.php');
-    new TWBAdminBar($wp_admin_bar, $this);
+    new TWBBWGAdminBar($wp_admin_bar, $this);
   }
 
   /**
@@ -293,18 +290,27 @@ class TenWebBooster {
       }
     }
 
-    if ( $this->booster_plugin_status == 2 ) {
-      if ( $this->booster_is_connected ) {
-        $this->status = 'connected';
-      }
-      else {
-        if ( $this->subscription_id ) {
-          $this->status = 'connect';
-        } else {
-          $this->status = 'sign_up';
-        }
+    if ( $this->booster_is_connected ) {
+      $this->status = 'connected';
+    }
+    else {
+      $this->status = 'sign_up';
+      if ( !empty(get_option("bwg_magic_data")) || $this->subscription_id ) {
+        $this->status = 'connect';
       }
     }
+//    if ( $this->booster_plugin_status == 2 ) {
+//      if ( $this->booster_is_connected ) {
+//        $this->status = 'connected';
+//      }
+//      else {
+//        if ( $this->subscription_id ) {
+//          $this->status = 'connect';
+//        } else {
+//          $this->status = 'sign_up';
+//        }
+//      }
+//    }
     return $this;
   }
 
@@ -314,7 +320,7 @@ class TenWebBooster {
    * @return int 0-not installed, 1-not active, 2-active
    */
   private function get_booster_status() {
-    include_once( $this->abspath . 'wp-admin/includes/plugin.php' );
+    include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
     if ( is_plugin_active(self::BOOSTER_PlUGIN_FILE) ) {
       return 2;
     }
@@ -327,22 +333,6 @@ class TenWebBooster {
   }
 
   /**
-   * get ABSPATH from WP_CONTENT_DIR.
-   *
-   * @param string $dirpath
-   *
-   * @return string
-   */
-  private function get_abspath() {
-    $dirpath = defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR : ABSPATH;
-    $array = explode( "wp-content", $dirpath );
-    if( isset( $array[0] ) && $array[0] != "" ) {
-      return $array[0];
-    }
-    return ABSPATH;
-  }
-
-  /**
    * Check if the plugin already installed.
    *
    * @param string $slug plugin's slug
@@ -351,7 +341,7 @@ class TenWebBooster {
    */
   private function is_plugin_installed() {
     if ( ! function_exists( 'get_plugins' ) ) {
-      require_once ABSPATH . 'wp-admin/includes/plugin.php';
+      require_once( ABSPATH . 'wp-admin/includes/plugin.php');
     }
     $all_plugins = get_plugins();
 

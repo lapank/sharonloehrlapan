@@ -196,6 +196,11 @@ class AlbumsView_bwg extends AdminView_bwg {
           <input type="text" id="name" name="name" value="<?php echo !empty($row->name) ? esc_attr( $row->name ) : ''; ?>">
         </div>
         <div class="bwg-page-actions">
+          <?php
+          if ( !BWG()->is_pro ) {
+            WDWLibrary::gallery_to_pro_button();
+          }
+          ?>
 					<button class="tw-button-primary button-large" onclick="if (spider_check_required('name', 'Title')) {return false;}; spider_set_input_value('task', 'save')">
 		  			<?php echo ($params['id']) ? __('Update', 'photo-gallery') : __('Publish', 'photo-gallery'); ?>
 					</button>

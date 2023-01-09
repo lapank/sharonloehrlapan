@@ -8,5 +8,5 @@ class FormidableContactForm {
 	public string $birthday;
 	public string $phone;
 	public string $email;
-    public string $isSync;
+	public string $isSync;
 }

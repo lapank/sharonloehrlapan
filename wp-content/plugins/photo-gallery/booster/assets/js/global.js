@@ -29,10 +29,6 @@ jQuery(function () {
       twb_check_score(this);
     }
   });
-  /* Add check score action to the reload buttons.*/
-  jQuery(".twb-reload").on("click", function () {
-    twb_check_score(this);
-  });
 
   /* Add a hover action to show dismiss tooltip.*/
   jQuery("th[id^='twb-speed-']").hover(function () {
@@ -126,7 +122,7 @@ function twb_disable_check() {
  */
 function twb_check_score(that) {
   var post_id = jQuery(that).data("post_id");
-  var parent = jQuery(that).parent().parent();
+  var parent = jQuery(that).parent().parent().parent();
   //var parent = jQuery(that).closest(".twb-score-container").parent();
   /* Class add loading near admin bar menu */
   jQuery(".twb_admin_bar_menu.twb_frontend").addClass("twb_score_inprogress");
@@ -143,6 +139,11 @@ function twb_check_score(that) {
   }
 
   parent.find(".twb-notoptimized").addClass("twb-hidden");
+
+  /* In case of Elementor */
+  if( parent.hasClass("twb_elementor_settings_content") ) {
+    jQuery(".twb_elementor_control_title").text(twb.checking).removeClass("twb_not_optimized").prepend("<span class='twb_inprogress'></span>");
+  }
 
   /* Disable score check button.*/
   twb_disable_check();
@@ -201,6 +202,11 @@ function twb_check_score(that) {
       jQuery(".twb-notoptimized").hover(function () {
         jQuery(this).parent().find(".twb-score-disabled-container").addClass("twb-hidden");
       });
+
+      /* In case of Elementor */
+      if( parent.hasClass("twb_elementor_settings_content") ) {
+        jQuery(".twb_elementor_control_title").text(twb.notoptimized).remove("span.twb_inprogress").addClass("twb_not_optimized");
+      }
     }
   });
 }
@@ -235,3 +241,26 @@ function twb_draw_score_circle(that) {
     jQuery(that).find('canvas').html(Math.round(score * progress));
   });
 }
+
+/* Adding button in Elementor edit panel navigation view */
+function twb_add_elementor_button() {
+  window.elementor.modules.layouts.panel.pages.menu.Menu.addItem({
+    name: twb.title,
+    icon: "twb-element-menu-icon",
+    title: twb.title,
+    type: "page",
+    callback: () => {
+      try {
+        window.$e.route("panel/page-settings/twb_optimize")
+      } catch (e) {
+        window.$e.route("panel/page-settings/settings"), window.$e.route("panel/page-settings/twb_optimize")
+      }
+    }
+  }, "more")
+}
+
+jQuery(window).on("elementor:init", () => {
+  window.elementor.on("panel:init", () => {
+    setTimeout(twb_add_elementor_button)
+  })
+});

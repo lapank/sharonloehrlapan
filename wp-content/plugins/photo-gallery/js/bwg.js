@@ -624,7 +624,9 @@ function spider_ajax_save( form_id, tr_group, is_last_ajax, content_message_id )
       } );
       jQuery( "#loading_div" ).hide();
       bwg_lazy_load_gallery();
-      wd_howto_src_change();
+      if ( typeof wd_howto_src_change === 'function' ) {
+        wd_howto_src_change();
+      }
 
       /* Add click event to toggle button to expand columns.*/
       jQuery( "tbody" ).on( "click", ".toggle-row", function () {

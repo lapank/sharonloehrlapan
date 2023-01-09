@@ -4,7 +4,7 @@ namespace CreativeMail\Modules\Contacts\Processors;
 
 use CreativeMail\Exceptions\CreativeMailException;
 use CreativeMail\Managers\IntegrationManager;
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Services\ContactsSyncService;
 use CreativeMail\Integrations\Integration;
 use Exception;
@@ -38,7 +38,7 @@ class ContactsSyncBackgroundProcessor extends WP_Background_Process {
 				$this->start_contacts_sync_for_all_integrations($activated_integrations);
 			}
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		return false;
@@ -56,7 +56,7 @@ class ContactsSyncBackgroundProcessor extends WP_Background_Process {
 
 		if ( ! empty($activated_integrations) ) {
 			$exception = new CreativeMailException('No activated integrations available');
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 
 		// Get all contacts.

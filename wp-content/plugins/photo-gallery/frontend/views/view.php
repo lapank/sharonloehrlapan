@@ -843,7 +843,7 @@ class BWGViewSite {
               $last_page = "last-page disabled";
             }
 
-            $REQUEST_URI = isset($REQUEST_URI) ? sanitize_url($REQUEST_URI) : '';
+            $REQUEST_URI = isset($_SERVER['REQUEST_URI']) ? sanitize_url($_SERVER['REQUEST_URI']) : '';
             $REQUEST_URI_first = add_query_arg(array( "page_number_" . $current_view => 1 ), $REQUEST_URI);
             $REQUEST_URI_prev =  add_query_arg(array( "page_number_" . $current_view => $page_number - 1 ), $REQUEST_URI);
             ?>

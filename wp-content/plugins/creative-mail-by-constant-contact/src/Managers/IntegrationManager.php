@@ -6,6 +6,7 @@ namespace CreativeMail\Managers;
 use CreativeMail\Helpers\EnvironmentHelper;
 use CreativeMail\Helpers\OptionsHelper;
 use CreativeMail\Integrations\Integration;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Handlers\BlueHostBuilderPluginHandler;
 use CreativeMail\Modules\Contacts\Handlers\ContactFormSevenPluginHandler;
 use CreativeMail\Modules\Contacts\Handlers\ElementorPluginHandler;
@@ -72,7 +73,7 @@ class IntegrationManager {
 				// Register hooks for integration class.
 				$this->active_integrations[ $active_plugin->get_slug() ]->registerHooks();
 			} catch ( Exception $e ) {
-				RaygunManager::get_instance()->exception_handler($e);
+				DatadogManager::get_instance()->exception_handler($e);
 			}
 		}
 	}

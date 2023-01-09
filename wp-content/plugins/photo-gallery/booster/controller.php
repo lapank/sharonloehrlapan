@@ -3,7 +3,7 @@
 /**
  * Class SpeedController_twb
  */
-class BoosterController {
+class BoosterControllerBWG {
   private $booster;
   private $model;
   private $view;
@@ -29,9 +29,9 @@ class BoosterController {
    */
   public function execute($task = '', $params = array()) {
     require_once($this->booster->plugin_dir . '/model.php');
-    $this->model = new BoosterModel();
+    $this->model = new BoosterModelBWG();
     require_once($this->booster->plugin_dir . '/view.php');
-    $this->view = new BoosterView();
+    $this->view = new BoosterViewBWG();
     if ( !$task ) {
       $task = isset($_GET['task']) ? sanitize_text_field($_GET['task']) : (isset($_POST['task']) ? sanitize_text_field($_POST['task']) : '');
     }
@@ -125,8 +125,7 @@ class BoosterController {
 
     $workspace_id = (int) get_site_option(TENWEBIO_MANAGER_PREFIX . '_workspace_id', 0);
     $domain_id = (int) get_option(TENWEBIO_MANAGER_PREFIX . '_domain_id', 0);
-    if ( $this->booster->booster_is_connected ||
-      $this->booster->is_paid ||
+    if ( $this->booster->is_paid ||
       $workspace_id == 0 ||
       $domain_id == 0 ||
       !defined('TENWEBIO_API_URL')) {
@@ -149,15 +148,19 @@ class BoosterController {
       if ( isset($body['status']) && $body['status'] == 200 ) {
         $data = $body['data'];
         $total_not_compressed_images_size = isset($data['not_compressed']['total_size']) ? $data['not_compressed']['total_size'] : 0;
-        $total_not_compressed_images_size = TWBLibrary::formatBytes($total_not_compressed_images_size);
+        $total_not_compressed_images_size = TWBBWGLibrary::formatBytes($total_not_compressed_images_size);
         $total_not_compressed_images_count = intval($data['not_compressed']['full'] + $data['not_compressed']['thumbs'] + $data['not_compressed']['other']);
 
         $pages_compressed_api = $data['pages_compressed'];
 
-        $twb_optimized_pages = \TenWebOptimizer\OptimizerUtils::getCriticalPages();
+        $twb_optimized_pages = array();
+        if ( class_exists('\TenWebOptimizer\OptimizerUtils') ) {
+          $twb_optimized_pages = \TenWebOptimizer\OptimizerUtils::getCriticalPages();
+        }
 
         $total_compressed_images = 0;
         $i = 0;
+        $pages_compressed = array();
         /* Adding new pages which are optimized but haven't images and endpoint doesn't have that pages in response */
         foreach ( $twb_optimized_pages as $page_id => $val ) {
           /* Permalink text for front_page should be Homepage */
@@ -189,7 +192,7 @@ class BoosterController {
         $data['total_not_compressed_images_count'] = $total_not_compressed_images_count;
       }
 
-      if ( $total_compressed_images != 0 || $total_not_compressed_images_size != 0 ) {
+      if ( $total_compressed_images != 0 || $total_not_compressed_images_size != 0 || count($pages_compressed) != 0 || $total_not_compressed_images_count != 0 ) {
         set_transient( 'twb_optimized_pages', $data, DAY_IN_SECONDS );
       }
     }
@@ -215,7 +218,6 @@ class BoosterController {
    * @return array
   */
   public function get_pages_compressed( $params ) {
-
     $return_data = array(
       'pages' => array(),
       'total_compressed_images' => 0,
@@ -281,7 +283,7 @@ class BoosterController {
           $total += $filesize;
         }
       }
-      $total = TWBLibrary::formatBytes( $total );
+      $total = TWBBWGLibrary::formatBytes( $total );
       update_option('twb_images_total_size', $total, 1);
     }
 
@@ -339,21 +341,24 @@ class BoosterController {
    * Install booster plugin
    */
   public function install_booster() {
-    $activated = $this->install_plugin();
-    // To change the plugin status on Dashboard.
-    if (class_exists('\Tenweb_Authorization\Helper')
-      && method_exists('\Tenweb_Authorization\Helper', "check_site_state") ) {
-      \Tenweb_Authorization\Helper::check_site_state(true);
-    }
-    // activate_plugin function returns null when the plugin activated successfully.
-    if ( is_null($activated) ) {
-      $this->booster = $this->booster->set_booster_data();
-    }
+    $this->install_plugin();
+
     $params = array();
     $params['booster_plugin_status'] = $this->booster->booster_plugin_status;
     $params['status'] = $this->booster->status;
     $params['is_plugin'] = $this->booster->is_plugin;
+    $params['tenweb_is_paid'] = $this->booster->is_paid;
+    $params['slug'] = $this->booster->slug;
+    $domain_id = get_site_option('tenweb_domain_id');
+    $params['dashboard_booster_url'] = '';
+    if ( defined("TENWEB_DASHBOARD") && !empty($domain_id) ) {
+      $params['dashboard_booster_url'] = trim(TENWEB_DASHBOARD, '/') . '/websites/' . $domain_id . '/booster/frontend';
+    }
     $params['submenu_parent_slug'] = $this->booster->submenu['parent_slug'];
+    $params['section_booster_title'] = $this->booster->page['section_booster_title'];
+    $params['section_booster_desc'] = $this->booster->page['section_booster_desc'];
+    $params['section_booster_success_title'] = $this->booster->page['section_booster_success_title'];
+    $params['section_booster_success_desc'] = $this->booster->page['section_booster_success_desc'];
     $this->view->header($params);
     die;
   }
@@ -368,7 +373,7 @@ class BoosterController {
   private function install_plugin() {
     $activated = FALSE;
     if ( $this->booster->booster_plugin_status == 0 ) {
-      include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+      include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php');
       wp_cache_flush();
       $upgrader = new Plugin_Upgrader();
       $installed = $upgrader->install(self::PLUGIN_ZIP);
@@ -379,6 +384,16 @@ class BoosterController {
 
     if ( !is_wp_error( $installed ) && $installed ) {
       $activated = activate_plugin(self::PlUGIN_FILE);
+    }
+
+    // To change the plugin status on Dashboard.
+    if (class_exists('\Tenweb_Authorization\Helper')
+      && method_exists('\Tenweb_Authorization\Helper', "check_site_state") ) {
+      \Tenweb_Authorization\Helper::check_site_state(true);
+    }
+    // activate_plugin function returns null when the plugin activated successfully.
+    if ( is_null($activated) ) {
+      $this->booster = $this->booster->set_booster_data();
     }
 
     return $activated;
@@ -413,16 +428,54 @@ class BoosterController {
   }
 
   /**
+   * Sign up and connect to the Dashboard.
+   *
+   * @return bool
+   */
+  public function sign_up_connect_dashboard() {
+    $activated = $this->install_plugin();
+    ob_clean();
+    if ( class_exists('\TenWebOptimizer\OptimizerUtils') && is_null($activated) ) {
+      $parent_slug = isset($_POST['parent_slug']) ? sanitize_text_field($_POST['parent_slug']) : '';
+      $slug = isset($_POST['slug']) ? sanitize_text_field($_POST['slug']) : '';
+      $is_plugin = isset($_POST['is_plugin']) ? sanitize_text_field($_POST['is_plugin']) : TRUE;
+      $args = array();
+      if ( $is_plugin ) {
+        switch ( $parent_slug ) {
+          case "manage_fm":
+            $args['plugin_id'] = '95';
+            break;
+          case "galleries_bwg":
+            $args['plugin_id'] = '101';
+            break;
+          default:
+            $args['product_slug'] = "plugin_" . $slug;
+        }
+      }
+      else {
+        $args['product_slug'] = "theme_" . $slug;
+      }
+      $args['login_request_plugin'] = $this->booster->slug;
+      $connect_link = \TenWebOptimizer\OptimizerUtils::get_tenweb_connection_link('sign-up', $args);
+      echo json_encode(array( 'status' => 'success', 'booster_connect_url' => $connect_link ));
+      die();
+    }
+    echo json_encode( array('status' => 'error') );
+    die();
+  }
+
+  /**
    * Sign up to the Dashboard.
    *
    * @return bool
   */
   public function sign_up_dashboard() {
+    $this->install_plugin();
+
     $email = isset($_POST['twb_email']) ? sanitize_email($_POST['twb_email']) : '';
     $parent_slug = isset($_POST['parent_slug']) ? sanitize_text_field($_POST['parent_slug']) : '';
     $slug = isset($_POST['slug']) ? sanitize_text_field($_POST['slug']) : '';
     $is_plugin = isset($_POST['is_plugin']) ? sanitize_text_field($_POST['is_plugin']) : TRUE;
-
 
     $body_data = array(
       'email' => $email,
@@ -430,52 +483,56 @@ class BoosterController {
       'last_name' => rand( 1000, 9999 ),
       'service_key' => 'gTcjslfqqBFFwJKBnFgQYhkQEJpplLaDKfj',
     );
-
     if ( $is_plugin ) {
-        switch ( $parent_slug ) {
-          case "manage_fm":
-            $body_data['product_id'] = '95';
-            break;
-          case "galleries_bwg":
-            $body_data['product_id'] = '101';
-            break;
-          default:
-            $body_data['product_slug'] = "plugin_" . $slug;
-        }
-    } else {
-        $body_data['product_slug'] = "theme_" . $slug;
+      switch ( $parent_slug ) {
+        case "manage_fm":
+          $body_data['product_id'] = '95';
+          break;
+        case "galleries_bwg":
+          $body_data['product_id'] = '101';
+          break;
+        case "onboarding_bwg":
+          $body_data['product_id'] = '204';
+          break;
+        default:
+          $body_data['product_slug'] = "plugin_" . $slug;
+      }
     }
-
+    else {
+      $body_data['product_slug'] = "theme_" . $slug;
+    }
     $args = array(
-      'method'      => 'POST',
-      'headers'     => array(
-        'Content-Type'  => 'application/x-www-form-urlencoded; charset=UTF-8',
-        'Accept'        => 'application/x.10webcore.v1+json'
+      'method' => 'POST',
+      'headers' => array(
+        'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Accept' => 'application/x.10webcore.v1+json',
       ),
-      'body'        => $body_data,
+      'body' => $body_data,
     );
     $url = 'https://core.10web.io/api/checkout/signup-via-magic-link';
     $result = wp_remote_post( $url, $args );
     ob_clean();
-    if ( !empty($result) && isset( $result['body']) ) {
-        $result = $result['body'];
-    } else {
-        echo json_encode( array('status' => 'error' ) );
-        die;
+    if ( !empty($result) && isset($result['body']) ) {
+      $result = $result['body'];
+    }
+    else {
+      echo json_encode(array( 'status' => 'error' ));
+      die;
     }
 
     $result = json_decode($result, 1);
     if ( class_exists('\TenWebOptimizer\OptimizerUtils') ) {
       $args = '';
       if ( isset($result['status']) && isset($result['data']['magic_data']) && $result['status'] == "ok" ) {
-        $args = array( 'magic_data' => $result['data']['magic_data'] );
+        $args = array( 'magic_data' => $result['data']['magic_data'], 'has_account' => 1 );
+        update_option("bwg_magic_data", $args, 1);
       }
       elseif ( isset($result['error']) && $result['error']['status_code'] == "422" ) {
         $args = array( 'login_request_plugin' => $this->booster->slug );
       }
       if ( $args ) {
-        $connect_link = \TenWebOptimizer\OptimizerUtils::get_tenweb_connection_link('login', $args);
-        echo json_encode(array( 'status' => 'success', 'booster_connect_url' => $connect_link ));
+        $connect_link = \TenWebOptimizer\OptimizerUtils::get_tenweb_connection_link('sign-up', $args);
+        echo json_encode(array( 'status' => 'success', 'booster_connect_url' => $connect_link, 'plugin_id' => 204 ));
         die();
       }
     }
@@ -505,7 +562,7 @@ class BoosterController {
   public function get_google_page_speed() {
     $last_api_key_index = isset($_POST['last_api_key_index']) ? sanitize_text_field($_POST['last_api_key_index']) : '';
 
-    $url = isset($_POST['twb_url']) ? sanitize_url($_POST['twb_url']) : '';;
+    $url = isset($_POST['twb_url']) ? sanitize_url($_POST['twb_url']) : '';
 
     /* Check if url hasn't http or https add */
     if ( strpos($url, 'http') !== 0 ){

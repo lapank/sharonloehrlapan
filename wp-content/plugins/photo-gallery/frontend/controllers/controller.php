@@ -359,7 +359,7 @@ class BWGControllerSite {
     }
 
     if ( !isset( $params['current_url'] ) ) {
-      $params['current_url'] = sanitize_url( trim((is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) );
+      $params['current_url'] = isset($_SERVER['REQUEST_URI']) ? sanitize_url($_SERVER['REQUEST_URI']) : '';
     }
     $need_scroll = 0;
     if( BWG()->options->front_ajax == "1" && (WDWLibrary::get('bwg_search_' . $bwg) != '' || WDWLibrary::get('filter_tag_' . $bwg) != "" || WDWLibrary::get("album_gallery_id_".$bwg) != "" || WDWLibrary::get("page_number_".$bwg)) != "" ) {

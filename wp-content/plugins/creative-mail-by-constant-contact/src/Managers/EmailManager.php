@@ -4,6 +4,7 @@
 namespace CreativeMail\Managers;
 
 use CreativeMail\CreativeMail;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Models\CustomerNewAccount;
 use CreativeMail\Models\CustomerNote;
 use CreativeMail\Models\CustomerResetPassword;
@@ -284,7 +285,7 @@ class EmailManager {
 				$data->salt               = bin2hex( is_string($salt) ? $salt : '' );
 				$data->generated_password = base64_encode( is_string($gp) ? $gp : '' );
 			} catch ( Exception $ex ) {
-				RaygunManager::get_instance()->exception_handler( $ex );
+				DatadogManager::get_instance()->exception_handler( $ex );
 			}
 		}
 
@@ -499,7 +500,7 @@ class EmailManager {
 							}
 						}
 					} catch ( Exception $ex ) {
-						RaygunManager::get_instance()->exception_handler( $ex );
+						DatadogManager::get_instance()->exception_handler( $ex );
 					}
 
 					$src      = wc_placeholder_img_src();
@@ -573,7 +574,7 @@ class EmailManager {
 				$data->order = $order_data;
 				$with_data   = true;
 			} catch ( Exception $ex ) {
-				RaygunManager::get_instance()->exception_handler( $ex );
+				DatadogManager::get_instance()->exception_handler( $ex );
 				$with_data = false;
 			}
 		}
@@ -776,7 +777,7 @@ class EmailManager {
 				return $order->get_view_order_url();
 			}
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler( $exception );
+			DatadogManager::get_instance()->exception_handler( $exception );
 		}
 
 		return null;
@@ -786,7 +787,7 @@ class EmailManager {
 		try {
 			return wc_get_page_permalink( 'myaccount' );
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler( $exception );
+			DatadogManager::get_instance()->exception_handler( $exception );
 		}
 
 		return null;
@@ -812,7 +813,7 @@ class EmailManager {
 
 			return $data;
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler( $exception );
+			DatadogManager::get_instance()->exception_handler( $exception );
 		}
 		return null;
 	}

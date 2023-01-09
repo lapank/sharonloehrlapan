@@ -93,6 +93,7 @@ return array(
     'NewfoldLabs\\WP\\Module\\Data\\Listeners\\Plugin' => $vendorDir . '/newfold-labs/wp-module-data/src/Listeners/Plugin.php',
     'NewfoldLabs\\WP\\Module\\Data\\Listeners\\SiteHealth' => $vendorDir . '/newfold-labs/wp-module-data/src/Listeners/SiteHealth.php',
     'NewfoldLabs\\WP\\Module\\Data\\Listeners\\Theme' => $vendorDir . '/newfold-labs/wp-module-data/src/Listeners/Theme.php',
+    'NewfoldLabs\\WP\\Module\\Data\\Listeners\\Yith' => $vendorDir . '/newfold-labs/wp-module-data/src/Listeners/Yith.php',
     'NewfoldLabs\\WP\\Module\\Data\\Logger' => $vendorDir . '/newfold-labs/wp-module-data/src/Logger.php',
     'NewfoldLabs\\WP\\Module\\Data\\SubscriberInterface' => $vendorDir . '/newfold-labs/wp-module-data/src/SubscriberInterface.php',
     'NewfoldLabs\\WP\\Module\\ECommerce\\Data\\Plugins' => $vendorDir . '/newfold-labs/wp-module-ecommerce/includes/Data/Plugins.php',

@@ -9,7 +9,7 @@
  * Plugin URI: https://wordpress.org/plugins/creative-mail-by-constant-contact/
  * Description: Free email marketing designed specifically for WordPress, Jetpack and WooCommerce. Send newsletters, promotions, updates and transactional e-commerce emails. Simple and easy, powered by Newfold Digital’s rock solid reliability.
  * Author: Newfold Digital
- * Version: 1.6.5
+ * Version: 1.6.6
  * Author URI: https://newfold.com/
  * WC requires at least: 3.6.0
  * WC tested up to: 6.8.2
@@ -20,7 +20,7 @@ use CreativeMail\Blocks\LoadBlock;
 define('CE4WP_PLUGIN_DIR', __DIR__ . '/');
 define('CE4WP_PLUGIN_URL', plugin_dir_url(__FILE__) . '/');
 define('CE4WP_PLUGIN_FILE', __FILE__);
-define('CE4WP_PLUGIN_VERSION', '1.6.5');
+define('CE4WP_PLUGIN_VERSION', '1.6.6');
 define('CE4WP_INSTANCE_UUID_KEY', 'ce4wp_instance_uuid');
 define('CE4WP_INSTANCE_HANDSHAKE_TOKEN', 'ce4wp_handshake_token');
 define('CE4WP_INSTANCE_HANDSHAKE_EXPIRATION', 'ce4wp_handshake_expiration');
@@ -37,8 +37,8 @@ define('CE4WP_CHECKOUT_CHECKBOX_ENABLED', 'ce4wp_checkout_checkbox_enabled');
 define('CE4WP_APP_GATEWAY_URL', 'https://app-gateway.creativemail.com/');
 define('CE4WP_APP_URL', 'https://app.creativemail.com/');
 define('CE4WP_ENVIRONMENT', 'PRODUCTION');
-define('CE4WP_BUILD_NUMBER', '1987');
-define('CE4WP_RAYGUN_PHP_KEY', 'Z85xL3mkgnW13Ri9DajGUg');
+define('CE4WP_BUILD_NUMBER', '2004');
+define('CE4WP_DATADOG_API_KEY', 'pub0da48851ee228f7358831087e7652909');
 define('CE4WP_BATCH_SIZE', 500);
 define('CE4WP_WC_API_KEY_ID', 'ce4wp_woocommerce_api_key_id');
 define('CE4WP_WC_API_CONSUMER_KEY', 'ce4wp_woocommerce_consumer_key');

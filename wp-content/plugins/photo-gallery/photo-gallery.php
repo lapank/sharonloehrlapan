@@ -3,7 +3,7 @@
  * Plugin Name: Photo Gallery
  * Plugin URI: https://10web.io/plugins/wordpress-photo-gallery/?utm_source=photo_gallery&utm_medium=free_plugin
  * Description: This plugin is a fully responsive gallery plugin with advanced functionality.  It allows having different image galleries for your posts and pages. You can create unlimited number of galleries, combine them into albums, and provide descriptions and tags.
- * Version: 1.8.4
+ * Version: 1.8.9
  * Author: Photo Gallery Team
  * Author URI: https://10web.io/plugins/?utm_source=photo_gallery&utm_medium=free_plugin
  * Text Domain: photo-gallery
@@ -107,8 +107,8 @@ final class BWG {
     $this->plugin_url = plugins_url(plugin_basename(dirname(__FILE__)));
     $this->front_url = $this->plugin_url;
     $this->main_file = plugin_basename(__FILE__);
-    $this->plugin_version = '1.8.4';
-    $this->db_version = '1.8.4';
+    $this->plugin_version = '1.8.9';
+    $this->db_version = '1.8.9';
     $this->prefix = 'bwg';
     $this->nicename = __('Photo Gallery', 'photo-gallery');
     require_once($this->plugin_dir . '/framework/WDWLibrary.php');
@@ -163,6 +163,7 @@ final class BWG {
     add_action('wp_ajax_options_' . $this->prefix, array($this, 'admin_ajax'));
     add_action('wp_ajax_addInstagramGallery', array( $this, 'bwg_add_embed_ajax' ));
     add_action('wp_ajax_addFacebookGallery', array( $this, 'bwg_add_embed_ajax' ));
+    add_action('wp_ajax_onboarding_ajax', array($this, 'onboarding'));
 
     if ( !is_admin() ) {
       add_shortcode('Best_Wordpress_Gallery', array($this, 'shortcode'));
@@ -350,6 +351,7 @@ final class BWG {
   }
 
   function add_privacy_policy_content() {
+    $this->bwg_activation_redirect();
     if ( !function_exists('wp_add_privacy_policy_content') ) {
       return;
     }
@@ -357,6 +359,20 @@ final class BWG {
         address, IP address and comment text to example.com. Example.com does
         not retain your personal data.', 'photo-gallery');
     wp_add_privacy_policy_content(BWG()->nicename, wp_kses_post(wpautop($content, FALSE)));
+  }
+
+  /**
+   * Redirects the user after plugin activation
+   */
+  function bwg_activation_redirect() {
+    if ( get_option( 'bwg_activation_redirect', false ) ) {
+      delete_option( 'bwg_activation_redirect' );
+      global $wpdb;
+      $count = $wpdb->get_var('SELECT COUNT(id) FROM ' . $wpdb->prefix . 'bwg_gallery');
+      if ( $count == 0 && !is_plugin_active('tenweb-speed-optimizer/tenweb_speed_optimizer.php') ) {
+        exit(wp_safe_redirect(admin_url('admin.php?page=onboarding_' . $this->prefix)));
+      }
+    }
   }
 
   public function register_plugin_block($blocks) {
@@ -480,8 +496,18 @@ final class BWG {
     $galleries_page = add_submenu_page($parent_slug, __('Add Galleries/Images', 'photo-gallery'), __('Add Galleries/Images', 'photo-gallery'), $permissions, 'galleries_' . $this->prefix, array($this , 'admin_pages'));
     add_action('load-' . $galleries_page, array($this, 'galleries_per_page_option'));
 
+    if ( !$this->is_pro ) {
+      add_submenu_page($parent_slug, __('Cloudflare CDN', 'photo-gallery'), '<span style="position: relative;">' . __('Cloudflare CDN', 'photo-gallery') . '<img src="' . BWG()->plugin_url . '/images/icons/pro_icon.svg" style="position: absolute; top: -1px;
+    left: 98px; width: 18px;"></span>', 'manage_options', 'cloudflare_' . $this->prefix, array(
+        $this,
+        'admin_pages'
+      ));
+    }
+
     $albums_page = add_submenu_page($parent_slug, __('Gallery Groups', 'photo-gallery'), __('Gallery Groups', 'photo-gallery'), $permissions, 'albums_' . $this->prefix, array($this , 'admin_pages'));
     add_action('load-' . $albums_page, array($this, 'albums_per_page_option'));
+
+    add_submenu_page(null, __('App', 'photo-gallery'), __('App', 'photo-gallery'), $permissions, 'onboarding_' . $this->prefix, array($this , 'onboarding'));
 
     add_submenu_page($parent_slug, __('Tags', 'photo-gallery'), __('Tags', 'photo-gallery'), $tags_permission, 'edit-tags.php?taxonomy=bwg_tag');
 
@@ -531,12 +557,19 @@ final class BWG {
     return false;
   }
 
+  /* Onboarding page views and actions */
+  public function onboarding() {
+    require_once BWG()->plugin_dir . "/onboarding/onboarding.php";
+    new Onboarding();
+  }
+
   /**
    * Admin pages.
    */
   public function admin_pages() {
     $allowed_pages = array(
       'galleries_' . $this->prefix,
+      'cloudflare_' . $this->prefix,
       'albums_' . $this->prefix,
       'options_' . $this->prefix,
       'themes_' . $this->prefix,
@@ -617,6 +650,7 @@ final class BWG {
     array_push($required_styles, $this->prefix . '_fontselect');
     wp_register_script($this->prefix . '_fontselect', $this->plugin_url . '/js/fontselect/fontselect.min.js', $required_scripts, '1.0.0');
     wp_register_style($this->prefix . '_tables', $this->plugin_url . '/css/bwg_tables.css', $required_styles, $this->plugin_version);
+    wp_register_style($this->prefix . '_cdn', $this->plugin_url . '/css/bwg_cdn.css', array(), $this->plugin_version);
     wp_register_style($this->prefix . '_gallery-upgrade', $this->plugin_url . '/css/gallery-upgrade.css', $required_styles, $this->plugin_version);
 
     wp_register_script($this->prefix . '_admin', $this->plugin_url . '/js/bwg.js', $required_scripts, $this->plugin_version);
@@ -715,7 +749,7 @@ final class BWG {
     $params['tag'] = WDWLibrary::get('tag', 0, 'intval');
     $params['album_id'] = WDWLibrary::get('album_id', 0, 'intval');
     $params['theme_id'] = WDWLibrary::get('theme_id', 0, 'intval');
-    $params['current_url'] = WDWLibrary::get('current_url', NULL);
+    $params['current_url'] = WDWLibrary::get('current_url', '', 'sanitize_url');
     $params['ajax'] = TRUE;
 
     echo $this->shortcode($params, TRUE);
@@ -1154,6 +1188,7 @@ final class BWG {
       }
     }
     $this->activate();
+    add_option( 'bwg_activation_redirect', true );
   }
 
   /**
@@ -1374,7 +1409,6 @@ final class BWG {
     wp_register_style('mCustomScrollbar', BWG()->front_url . '/css/jquery.mCustomScrollbar.min.css', array(), '3.1.5');
     wp_register_script('jquery-fullscreen', BWG()->front_url . '/js/jquery.fullscreen.min.js', $required_scripts, '0.6.0', $in_footer);
     wp_register_script($this->prefix . '_lazyload', BWG()->front_url . '/js/jquery.lazy.min.js', $required_scripts, $version, $in_footer);
-    wp_register_script($this->prefix . '_circle', BWG()->front_url . '/js/circle-progress.js', $required_scripts, '1.2.2', $in_footer);
     array_push($required_scripts,
                'sumoselect',
                'jquery-mobile',
@@ -1426,7 +1460,6 @@ final class BWG {
       wp_enqueue_script($this->prefix . '_frontend');
     }
 
-    $current_url = urlencode((is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
     wp_localize_script($this->prefix . '_frontend', 'bwg_objectsL10n', array(
 	    'bwg_field_required'  => __('field is required.', 'photo-gallery'),
       'bwg_mail_validation' => __('This is not a valid email address.', 'photo-gallery'),
@@ -1901,6 +1934,7 @@ final class BWG {
 		  'photo-gallery-facebook' => array( 'version' => '1.1.0', 'file' => 'photo-gallery-facebook.php' ),
 		  'photo-gallery-export' => array( 'version' => '1.0.3', 'file' => 'photo-gallery-export.php' ),
 		  'photo-gallery-ecommerce' => array( 'version' => '1.0.17', 'file' => 'photo-gallery-ecommerce.php' ),
+          'photo-gallery-google-photos' => array( 'version' => '1.0.9', 'file' => 'photo-gallery-google-photos.php' ),
 		);
 		$add_ons_notice = array();
 		include_once(BWG()->abspath . 'wp-admin/includes/plugin.php');
@@ -1988,22 +2022,6 @@ final class BWG {
     wp_enqueue_script(BWG()->prefix . 'elementor_widget_js', plugins_url('js/bwg_elementor_widget.js', __FILE__), array( 'jquery' ));
   }
 
-  public function webinar_banner() {
-    // Webinar banner
-    if ( !class_exists( 'TWPGWebinar' ) ) {
-      require_once( $this->plugin_dir . '/framework/TWWebinar.php' );
-    }
-    new TWPGWebinar(array(
-      'menu_postfix' => '_' . $this->prefix,
-      'title' => 'Join the Webinar',
-      'description' => 'How to Create a Fully Functional WP Website with Beautiful Photo Gallery in Just an Hour + SPECIAL GIFT FOR WEBINAR ATTENDEES',
-      'preview_type' => 'youtube',
-      'preview_url' => 'A111ykjWdW8',
-      'button_text' => 'SIGN UP',
-      'button_link' => 'https://my.demio.com/ref/ydTJSUzyVqOgcUOV',
-    ));
-  }
-
   /*
    * Change image editors library.
    *
@@ -2035,14 +2053,16 @@ function photo_gallery( $id ) {
   echo BWG()->shortcode(array( 'id' => $id ));
 }
 
-require_once(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . '/booster/init.php');
+require_once(WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . '/booster/main.php');
 add_action('init', function() {
-  TWB(array(
-        'submenu' => array(
-          'parent_slug' => 'galleries_bwg',
-        ),
-        'page' => array(
-          'slug' => 'photo-gallery',
-        ),
-      ));
+new TenWebBoosterBWG(array(
+                                'plugin_dir' => WP_PLUGIN_DIR . "/" . plugin_basename(dirname(__FILE__)) . '/booster',
+                                'plugin_url' => plugins_url(plugin_basename(dirname(__FILE__))) . '/booster',
+                                'submenu' => array(
+                                  'parent_slug' => 'galleries_bwg',
+                                ),
+                                'page' => array(
+                                  'slug' => 'photo-gallery',
+                                ),
+                              ));
 }, 11);

@@ -4,7 +4,7 @@ namespace CreativeMail\Modules\Contacts\Handlers;
 
 define('CE4WP_CAL_EVENTTYPE', 'WordPress - Caldera Forms');
 
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use CreativeMail\Modules\Contacts\Models\OptActionBy;
 use Exception;
@@ -111,7 +111,7 @@ class CalderaPluginHandler extends BaseContactFormPluginHandler {
 			}
 			$this->upsertContact($this->convertToContactModel($calderaContact));
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 
@@ -161,7 +161,7 @@ class CalderaPluginHandler extends BaseContactFormPluginHandler {
 				try {
 					$contactModel = $this->convertToContactModel($contact);
 				} catch ( Exception $exception ) {
-					RaygunManager::get_instance()->exception_handler($exception);
+					DatadogManager::get_instance()->exception_handler($exception);
 					continue;
 				}
 

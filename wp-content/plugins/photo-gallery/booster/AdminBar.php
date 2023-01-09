@@ -2,7 +2,7 @@
 /**
  * Class OptimizerAdminBar
  */
-class TWBAdminBar
+class TWBBWGAdminBar
 {
     private $booster;
 
@@ -36,8 +36,14 @@ class TWBAdminBar
           echo wp_json_encode(array('html' => $html, 'clearInterval' => $clearInterval, 'changeLogo' => $changeLogo));
           die;
       } else {
+          global $post;
+          if ( !empty($post) ) {
+            if ( get_post_status($post->ID) != 'publish' ) {
+              return;
+            }
+          }
 
-          $this->page_speed_status = $this->get_page_speed_status();
+          $this->page_speed_status = TWBBWGLibrary::get_page_speed_status();
           $this->include_style_scripts();
           $wp_admin_bar->add_menu(array(
                                     'id' => 'twb_adminbar_info',
@@ -52,37 +58,8 @@ class TWBAdminBar
     }
 
     public function include_style_scripts() {
-      wp_enqueue_style(TenWebBooster::PREFIX . '-global');
-      wp_enqueue_script(TenWebBooster::PREFIX . '-global');
-    }
-
-    /**
-      * Get status which return if score counted = 2, not counted = 0, inprogress = 1
-      *
-      * @return int
-    */
-    public function get_page_speed_status() {
-      global $post;
-      if ( empty($post) ) {
-        return FALSE;
-      }
-
-      $post_id = $post->ID;
-      $page_score = get_post_meta( $post_id, 'two_page_speed' );
-      if ( empty($page_score) ) {
-        return 'notstarted';
-      }
-      $page_score = end($page_score);
-      if ( isset($page_score['previous_score']) ) {
-        if ( isset( $page_score['previous_score']['error'] ) && $page_score['previous_score']['error'] == "1" ) {
-            return 'error';
-        } elseif ( isset( $page_score['previous_score']['status'] ) && $page_score['previous_score']['status'] == "inprogress" ) {
-            return 'inprogress';
-        } elseif( isset( $page_score['previous_score']['status'] ) && $page_score['previous_score']['status'] == "completed" ) {
-            return 'completed';
-        }
-      }
-      return 'notstarted';
+      wp_enqueue_style(TenWebBoosterBWG::PREFIX . '-global');
+      wp_enqueue_script(TenWebBoosterBWG::PREFIX . '-global');
     }
 
     /**
@@ -176,7 +153,7 @@ class TWBAdminBar
              class="twb_check_score_button"><?php _e('Check PageSpeed Score', 'tenweb-booster') ?></a>
         </div>
           <?php
-          echo TWBLibrary::dismiss_info_content( $this->booster );
+          echo TWBBWGLibrary::dismiss_info_content( $this->booster );
           ?>
       </div>
       <?php
@@ -238,8 +215,8 @@ class TWBAdminBar
       <div class="twb_admin_bar_menu_content twb-optimized twb_counted <?php echo $this->page_speed_status != 'completed' ? 'twb-hidden' : ''; ?>">
         <?php
         $title = sprintf(__('%s page', 'tenweb-booster'), $page_title);
-        TWBLibrary::score( $score, $url, $post_id, $title, 0 );
-        echo TWBLibrary::dismiss_info_content( $this->booster );
+        TWBBWGLibrary::score( $score, $url, $post_id, $title, 0 );
+        echo TWBBWGLibrary::dismiss_info_content( $this->booster );
         ?>
       </div>
       <?php
@@ -263,8 +240,8 @@ class TWBAdminBar
       <div class="twb_admin_bar_menu_content twb-optimized twb_counted <?php echo $this->page_speed_status != 'error' ? 'twb-hidden' : ''; ?>">
         <?php
         $title = sprintf(__('%s page', 'tenweb-booster'), $page_title);
-        TWBLibrary::score( $score, $url, $post_id, $title, 0 );
-        echo TWBLibrary::dismiss_info_content( $this->booster );
+        TWBBWGLibrary::score( $score, $url, $post_id, $title, 0 );
+        echo TWBBWGLibrary::dismiss_info_content( $this->booster );
         ?>
       </div>
       <?php
@@ -331,8 +308,8 @@ class TWBAdminBar
               <div class="twb_score_block_container">
                 <?php
                 $title = sprintf( __('%s page', 'tenweb-booster'), esc_html($score['post_title']) );
-                TWBLibrary::score( $score, $url, $score['post_id'], $title, 0 );
-                echo TWBLibrary::dismiss_info_content( $this->booster );
+                TWBBWGLibrary::score( $score, $url, $score['post_id'], $title, 0 );
+                echo TWBBWGLibrary::dismiss_info_content( $this->booster );
                 ?>
               </div>
             </div>

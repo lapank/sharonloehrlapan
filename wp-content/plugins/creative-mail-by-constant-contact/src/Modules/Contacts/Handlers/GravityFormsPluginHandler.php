@@ -4,7 +4,7 @@ namespace CreativeMail\Modules\Contacts\Handlers;
 
 define('CE4WP_GF_EVENTTYPE', 'WordPress - GravityForms');
 
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use CreativeMail\Modules\Contacts\Models\OptActionBy;
 use Exception;
@@ -177,7 +177,7 @@ final class GravityFormsPluginHandler extends BaseContactFormPluginHandler {
 			$contact->isSync = false;
 			$this->upsertContact($this->convertToContactModel($contact));
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 
@@ -241,7 +241,7 @@ final class GravityFormsPluginHandler extends BaseContactFormPluginHandler {
 					try {
 						$contactModel = $this->convertToContactModel($contact);
 					} catch ( Exception $exception ) {
-						RaygunManager::get_instance()->exception_handler($exception);
+						DatadogManager::get_instance()->exception_handler($exception);
 						continue;
 					}
 

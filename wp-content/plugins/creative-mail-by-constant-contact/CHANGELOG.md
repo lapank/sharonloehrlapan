@@ -1,5 +1,8 @@
 Changelog
 =========
+#### 1.6.6 - December 14th, 2022
+- Better security fixes
+
 #### 1.6.5 - November 30th, 2022
 - Abandoned Cart improvements
 

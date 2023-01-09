@@ -3,11 +3,11 @@
 /**
  * Class BoosterView
  */
-class BoosterView {
+class BoosterViewBWG {
 
   public function __construct() {
-    wp_enqueue_style(TenWebBooster::PREFIX);
-    wp_enqueue_script(TenWebBooster::PREFIX . '-script');
+    wp_enqueue_style(TenWebBoosterBWG::PREFIX);
+    wp_enqueue_script(TenWebBoosterBWG::PREFIX . '-script');
   }
 
   /**
@@ -54,7 +54,7 @@ class BoosterView {
         }
       }
       // If CTAs disable option is enabled.
-      if ( $params['show_cta_option']) {
+      if ( $params['show_cta_option'] && $params['booster_plugin_status'] != 2 ) {
         ?>
         <div class="twb-speed-footer">
           <input type="checkbox" id="twb-show-cta" <?php echo $params['show_cta'] == 1 ? 'checked' : ''; ?>>
@@ -140,26 +140,38 @@ class BoosterView {
       $html = ob_get_clean();
     }
     elseif ( $status == 'sign_up' ) {
-      $step = 2;
+      $step = FALSE;
       $connected = FALSE;
       $cont_class = 'twb-sign_up-booster-container';
-      $title = __('10Web Booster plugin is installed!', 'tenweb-booster');
+      $title = $params['section_booster_title'];
       $description = $params['section_booster_desc'];
       ob_start();
       ?>
-      <input type="email" class="twb-sign-up-input" placeholder="<?php esc_html_e('Email address', 'tenweb-booster'); ?>" />
+      <div class="twb-description-steps">
+        <ul>
+          <li><?php esc_html_e('Optimize all the images of your website, including ones that are not part of your galleries, so they load faster for visitors.', 'tenweb-booster'); ?></li>
+          <li><?php esc_html_e('Speed up your entire website and get a 90+ PageSpeed score to improve Google rankings and conversions.', 'tenweb-booster'); ?></li>
+        </ul>
+      </div>
+      <?php
+      $description .= ob_get_clean();
+      ob_start();
+      ?>
       <div class="twb-sign-up-dashboard-button-container">
         <a class="twb-booster-button twb-sign-up-dashboard-button"
            data-parent_slug="<?php echo esc_attr($params['submenu_parent_slug']); ?>"
            data-slug="<?php echo esc_attr($params['slug']); ?>"
            data-is_plugin="<?php echo esc_attr($params['is_plugin']); ?>"
-           onclick="twb_sign_up_dashboard( this )"><?php esc_html_e('Sign up', 'tenweb-booster'); ?></a>
+           onclick="twb_sign_up_connect_dashboard( this )"><?php esc_html_e('Sign up & install', 'tenweb-booster'); ?></a>
         <div>
           <?php
           $terms_of_services = '<br /><a href="https://10web.io/terms-of-service/" target="_blank">' . __('Terms of Services', 'tenweb-booster') . '</a>';
           $privacy_policy = '<a href="https://10web.io/privacy-policy/" target="_blank">' . __('Privacy Policy', 'tenweb-booster') . '</a>';
           echo sprintf(__('By signing up, you agree to 10Web’s %s and %s', 'tenweb-booster'), $terms_of_services, $privacy_policy); ?>
         </div>
+      </div>
+      <div class="twb-info">
+        <?php esc_html_e('We will install the 10Web Booster plugin during signup from the WordPress.org repository.', 'tenweb-booster'); ?>
       </div>
       <?php
       $html = ob_get_clean();
@@ -168,18 +180,42 @@ class BoosterView {
       $step = 0;
       $connected = FALSE;
       $cont_class = 'twb-connect-to-dashboard-container';
-      $title = __('10Web Booster plugin is installed!', 'tenweb-booster');
-      $description = __('Connect to 10Web dashboard to activate 10Web Booster on your website and start optimization process. Optimization will start automatically.', 'tenweb-booster');
+      $title = __('Optimize all images and galleries', 'tenweb-booster');
+      $description = __('Use the free 10Web Booster plugin to automatically optimize your images and boost PageSpeed score.', 'tenweb-booster');
       ob_start();
       ?>
+      <div class="twb-description-steps">
+        <ul>
+          <li><?php esc_html_e('Optimize all the images of your website, including ones that are not part of your galleries, so they load faster for visitors.', 'tenweb-booster'); ?></li>
+          <li><?php esc_html_e('Speed up your entire website and get a 90+ PageSpeed score to improve Google rankings and conversions.', 'tenweb-booster'); ?></li>
+        </ul>
+      </div>
+      <?php
+      $description .= ob_get_clean();
+      ob_start();
+      $url = '';
+      if ( class_exists('\TenWebOptimizer\OptimizerUtils') ) {
+        $magic_data = get_option("bwg_magic_data");
+        $url = \TenWebOptimizer\OptimizerUtils::get_tenweb_connection_link('sign-up', array(
+          'plugin_id' => 101,
+          'login_request_plugin' => 'photo-gallery',
+          'magic_data' => isset($magic_data['magic_data']) ? $magic_data['magic_data'] : '',
+          'has_account' => 1,
+        ));
+      }
+      ?>
       <div class="twb-sign-up-dashboard-button-container">
-        <a class="twb-booster-button twb-connect-to-dashboard-button" onclick="twb_connect_to_dashboard( this )"><?php esc_html_e('Connect', 'tenweb-booster'); ?></a>
+        <a class="twb-booster-button twb-connect-to-dashboard-button" href="<?php echo esc_url($url); ?>"><?php esc_html_e('Optimize now', 'tenweb-booster'); ?></a>
+        <div>
+          <?php esc_html_e('Your website will be connected to the 10Web service.', 'tenweb-booster'); ?>
+        </div>
       </div>
       <?php
       $html = ob_get_clean();
     }
     elseif ( $status == 'connected' ) {
       $step = $params['tenweb_is_paid'] ? 0 : 2;
+      $step = FALSE;
       $connected = TRUE;
       $cont_class = 'twb-connected-booster-container' . (!$params['tenweb_is_paid'] ? ' twb-is-free' : '');
       $title = __('10Web Booster is active', 'tenweb-booster');
@@ -206,7 +242,7 @@ class BoosterView {
       <p class="twb-section-title"><?php echo esc_html($title); ?></p>
       <?php } ?>
       <?php if ($description) { ?>
-      <p class="twb-header-description"><?php echo esc_html($description); ?></p>
+      <p class="twb-header-description"><?php echo $description; ?></p>
       <?php } ?>
       <?php if ($step) { ?>
       <ul class="twb-install-booster-steps">
@@ -367,7 +403,7 @@ class BoosterView {
    * @param array $params
    */
   public function top_banner( $params = array() ) {
-    wp_enqueue_style(TenWebBooster::PREFIX . '-top-banner');
+    wp_enqueue_style(TenWebBoosterBWG::PREFIX . '-top-banner');
     $button = $params['button'];
     ?>
     <div class="twb-booster-top-banner">

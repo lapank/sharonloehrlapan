@@ -5,7 +5,7 @@ namespace CreativeMail\Modules\Contacts\Handlers;
 define('CE4WP_FRM_EVENTTYPE', 'WordPress - Formidable');
 
 use CreativeMail\Exceptions\CreativeMailException;
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use CreativeMail\Modules\Contacts\Models\FormidableContactForm;
 use CreativeMail\Modules\Contacts\Models\OptActionBy;
@@ -31,7 +31,7 @@ class FormidablePluginHandler extends BaseContactFormPluginHandler {
 	 *
 	 * @param ?array                $entry The entry form data.
 	 * @param FormidableContactForm $formidableContact The contact container to hold the data.
-     *
+	 *
 	 * @return void|null
 	 */
 	private function FindEntryValues( ?array $entry, FormidableContactForm $formidableContact ) {
@@ -58,9 +58,9 @@ class FormidablePluginHandler extends BaseContactFormPluginHandler {
 	 * Prepare the data and send it as a ContactModel.
 	 *
 	 * @param FormidableContactForm $contact The contact container to hold the data.
-     *
+	 *
 	 * @return ContactModel
-     *
+	 *
 	 * @throws Exception If the contact is not valid.
 	 */
 	public function convertToContactModel( $contact ) {
@@ -97,7 +97,7 @@ class FormidablePluginHandler extends BaseContactFormPluginHandler {
 	 *
 	 * @param int $entry_id The entry ID.
 	 * @param int $form_id The form ID.
-     *
+	 *
 	 * @return void
 	 */
 	public function ceHandleFormidableFormSubmission( int $entry_id, int $form_id ) {
@@ -118,7 +118,7 @@ class FormidablePluginHandler extends BaseContactFormPluginHandler {
 			}
 			if ( empty ($form_nonce) || empty($post_key) ) {
 				$exception = new CreativeMailException('Formidable Form Integration - Nonce not found');
-				RaygunManager::get_instance()->exception_handler($exception);
+				DatadogManager::get_instance()->exception_handler($exception);
 				return;
 			}
 
@@ -145,7 +145,7 @@ class FormidablePluginHandler extends BaseContactFormPluginHandler {
 			}
 			$this->upsertContact($this->convertToContactModel($formidableContact));
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 
@@ -171,7 +171,7 @@ class FormidablePluginHandler extends BaseContactFormPluginHandler {
 	 * Get the contacts from the Form Plugin
 	 *
 	 * @param ?int $limit The limit of contacts to return.
-     *
+	 *
 	 * @return array|void|null
 	 */
 	public function get_contacts( $limit = null ) {
@@ -210,7 +210,7 @@ class FormidablePluginHandler extends BaseContactFormPluginHandler {
 							$contactModel = null;
 							$contactModel = $this->convertToContactModel($formidableContact);
 						} catch ( Exception $exception ) {
-							RaygunManager::get_instance()->exception_handler($exception);
+							DatadogManager::get_instance()->exception_handler($exception);
 							continue;
 						}
 						if ( ! empty($contactModel->email) ) {
@@ -233,7 +233,7 @@ class FormidablePluginHandler extends BaseContactFormPluginHandler {
 	 * Combine the entry data into a single array.
 	 *
 	 * @param array $entryResults The entry results.
-     *
+	 *
 	 * @return array
 	 */
 	private function CombineEntryData( array $entryResults ) {

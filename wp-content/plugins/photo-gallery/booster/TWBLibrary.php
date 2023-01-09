@@ -1,5 +1,5 @@
 <?php
-class TWBLibrary {
+class TWBBWGLibrary {
 
   /**
    * Return button template which styles user can change using arguments
@@ -95,11 +95,11 @@ class TWBLibrary {
       update_post_meta($post_id, 'two_page_speed', $page_score);
     }
 
-    $desktop_score = TWBLibrary::google_check_score($url, 'desktop');
-   // $desktop_score = array('desktop_score' => 75, 'desktop_tti' => '1.1');
+    $desktop_score = TWBBWGLibrary::google_check_score($url, 'desktop');
+    //$desktop_score = array('desktop_score' => 75, 'desktop_tti' => '1.1');
    // $desktop_score = array('error' => 1);
     $score = $desktop_score;
-    $mobile_score = TWBLibrary::google_check_score($url, 'mobile');
+    $mobile_score = TWBBWGLibrary::google_check_score($url, 'mobile');
    // $mobile_score = array('mobile_score' => 50, 'mobile_tti' => '1.0');
    // $mobile_score = array('error' => 1);
     $score = array_merge($score, $mobile_score);
@@ -167,11 +167,12 @@ class TWBLibrary {
    * @param $url
    * @param $post_id
    * @param $title
-   * @param $hidden
+   * @param $hidden bool need to hidden class or no
+   * @param $size int size of circle in speed score
    *
    * @return void
    */
-  public static function score( $score, $url = '', $post_id = 0, $title = '', $hidden = 1 ) {
+  public static function score( $score, $url = '', $post_id = 0, $title = '', $hidden = 1, $size = 30 ) {
     $error = empty($score['error']) ? 0 : 1;
     if (empty($score) || $error) {
       $score = array(
@@ -186,13 +187,13 @@ class TWBLibrary {
     $title = ($title != '') ? 'of ' . $title : '';
     ?>
     <div class="twb-score-container <?php echo $hidden ? 'twb-hidden' : '' ?>" data-id="<?php echo esc_attr($post_id); ?>">
-      <div class="twb-score-title"><?php echo sprintf(__('PageSpeed score %s', 'tenweb-booster'), esc_html($title)); ?></div>
+      <div class="twb-score-title"><?php echo sprintf(__('PageSpeed score %s', 'tenweb-booster'), strip_tags($title, "<i>")); ?></div>
       <div class="twb-score">
         <div class="twb-score-mobile">
           <div class="twb-score-circle"
                data-id="mobile"
                data-thickness="2"
-               data-size="30"
+               data-size="<?php echo esc_attr($size); ?>"
                data-score="<?php echo esc_attr($score['mobile_score']); ?>"
                data-tti="<?php echo esc_attr($score['mobile_tti']); ?>">
             <span class="twb-score-circle-animated"></span>
@@ -204,13 +205,13 @@ class TWBLibrary {
           </div>
         </div>
         <div class="twb-score-mobile twb-score-mobile-overlay twb-score-overlay <?php echo esc_html($error ? '' : 'twb-hidden'); ?>">
-          <div class="twb-reload" data-post_id="<?php echo $post_id; ?>"></div>
+          <div class="twb-reload" onclick="twb_check_score(this)" data-post_id="<?php echo $post_id; ?>"></div>
         </div>
         <div class="twb-score-desktop">
           <div class="twb-score-circle"
                data-id="desktop"
                data-thickness="2"
-               data-size="30"
+               data-size="<?php echo esc_attr($size); ?>"
                data-score="<?php echo esc_attr($score['desktop_score']); ?>"
                data-tti="<?php echo esc_attr($score['desktop_tti']); ?>">
             <span class="twb-score-circle-animated"></span>
@@ -222,7 +223,7 @@ class TWBLibrary {
           </div>
         </div>
         <div class="twb-score-desktop twb-score-desktop-overlay twb-score-overlay <?php echo esc_html($error ? '' : 'twb-hidden'); ?>">
-          <div class="twb-reload" data-post_id="<?php echo $post_id; ?>"></div>
+          <div class="twb-reload" onclick="twb_check_score(this)" data-post_id="<?php echo $post_id; ?>"></div>
         </div>
       </div>
       <?php
@@ -246,4 +247,33 @@ class TWBLibrary {
     <?php
     return ob_get_clean();
   }
+
+  /**
+   * Get status which return if score counted = 2, not counted = 0, inprogress = 1
+   *
+   * @return string
+   */
+  public static function get_page_speed_status() {
+    global $post;
+    if ( empty($post) ) {
+      return false;
+    }
+
+    $post_id = $post->ID;
+    $page_score = get_post_meta( $post_id, 'two_page_speed' );
+    $page_score = end($page_score);
+
+    if ( isset($page_score['previous_score']) ) {
+      if ( isset( $page_score['previous_score']['error'] ) && $page_score['previous_score']['error'] == "1" ) {
+        return 'error';
+      } elseif ( isset( $page_score['previous_score']['status'] ) && $page_score['previous_score']['status'] == "inprogress" ) {
+        return 'inprogress';
+      } elseif( isset( $page_score['previous_score']['status'] ) && $page_score['previous_score']['status'] == "completed" ) {
+        return 'completed';
+      }
+    }
+    return 'notstarted';
+  }
 }
+
+

@@ -4,7 +4,7 @@ namespace CreativeMail\Modules\Contacts\Handlers;
 
 define('CE4WP_JP_EVENTTYPE', 'WordPress - Jetpack');
 
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use CreativeMail\Modules\Contacts\Models\OptActionBy;
 use Exception;
@@ -112,7 +112,7 @@ final class JetpackPluginHandler extends BaseContactFormPluginHandler {
 
 			$this->upsertContact($this->convertToContactModel($contact));
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 
@@ -206,7 +206,7 @@ final class JetpackPluginHandler extends BaseContactFormPluginHandler {
 					try {
 						$contactModel = $this->convertToContactModel($contact);
 					} catch ( Exception $exception ) {
-						RaygunManager::get_instance()->exception_handler($exception);
+						DatadogManager::get_instance()->exception_handler($exception);
 						continue;
 					}
 

@@ -4,7 +4,7 @@ namespace CreativeMail\Modules\Contacts\Handlers;
 
 define('CE4WP_CF7_EVENTTYPE', 'WordPress - Contact Form 7');
 
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Models\ContactFormSevenSubmission;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use CreativeMail\Modules\Contacts\Models\ContactAddressModel;
@@ -178,7 +178,7 @@ class ContactFormSevenPluginHandler extends BaseContactFormPluginHandler {
 						$contactModel->setBirthday($birthday);
 					}
 				} catch ( Exception $exception ) {
-					RaygunManager::get_instance()->exception_handler($exception);
+					DatadogManager::get_instance()->exception_handler($exception);
 					continue;
 				}
 
@@ -200,7 +200,7 @@ class ContactFormSevenPluginHandler extends BaseContactFormPluginHandler {
 		try {
 			$this->upsertContact($this->convertToContactModel($contact_form));
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 

@@ -7,8 +7,7 @@ use CreativeMail\Helpers\OptionsHelper;
 if ( isset ( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && isset ( $_POST['action'] ) ) {
 	if ( 'disconnect' === $_POST['action']
 		&& isset( $_POST['disconnect_nonce'] )
-		&& wp_verify_nonce( sanitize_text_field ( wp_unslash ( $_POST['disconnect_nonce'] ) ), 'disconnect' ) )
-    {
+		&& wp_verify_nonce( sanitize_text_field ( wp_unslash ( $_POST['disconnect_nonce'] ) ), 'disconnect' ) ) {
 		OptionsHelper::clear_options(true);
 		// @phpstan-ignore-next-line
 		$this->instance_id = null;
@@ -17,8 +16,7 @@ if ( isset ( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD
 	if ( 'change_activated_plugins' === $_POST['action']
 		&& isset ( $_POST['activated_plugins_nonce'] )
 		&& wp_verify_nonce(
-			sanitize_text_field ( wp_unslash ( $_POST['activated_plugins_nonce'] ) ), 'activated_plugins' ) )
-    {
+			sanitize_text_field ( wp_unslash ( $_POST['activated_plugins_nonce'] ) ), 'activated_plugins' ) ) {
 		$activated_plugins = array();
 		if ( isset($_POST['activated_plugins']) ) {
 			$activated_plugins = array_map( 'sanitize_text_field', wp_unslash( $_POST['activated_plugins'] ) );
@@ -29,19 +27,16 @@ if ( isset ( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD
 	if ( 'change_marketing_information' === $_POST['action']
 		&& isset ( $_POST['marketing_consent_nonce'] )
 		&& wp_verify_nonce(
-			sanitize_text_field( wp_unslash($_POST['marketing_consent_nonce']) ), 'marketing_consent' ) )
-    {
+			sanitize_text_field( wp_unslash($_POST['marketing_consent_nonce']) ), 'marketing_consent' ) ) {
 		if ( array_key_exists( 'ce4wp_show_marketing_checkbox', $_POST )
-			&& sanitize_key( $_POST['ce4wp_show_marketing_checkbox'] ) === 'on' )
-        {
+			&& sanitize_key( $_POST['ce4wp_show_marketing_checkbox'] ) === 'on' ) {
 			OptionsHelper::set_checkout_checkbox_enabled('1');
-		} else
-        {
+		} else {
 			OptionsHelper::set_checkout_checkbox_enabled('0');
 		}
 		OptionsHelper::set_checkout_checkbox_text(
 			sanitize_text_field( wp_unslash( $_POST['ce4wp_checkbox_text'] ?? '' ) )
-        );
+		);
 	}
 }
 

@@ -6,7 +6,7 @@ use CreativeMail\Clients\CreativeMailClient;
 use CreativeMail\CreativeMail;
 use CreativeMail\Exceptions\CreativeMailException;
 use CreativeMail\Helpers\OptionsHelper;
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use Exception;
 
 class DashboardWidgetModule {
@@ -61,7 +61,7 @@ class DashboardWidgetModule {
 				$this->show_woo_commerce();
 			}
 		} catch ( CreativeMailException $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 			$this->show_exception();
 		}
 	}
@@ -99,7 +99,7 @@ class DashboardWidgetModule {
 				include CE4WP_PLUGIN_DIR . 'src/views/admin-dashboard-widget/no-woocommerce.php';
 			}
 		} catch ( Exception $ex ) {
-			RaygunManager::get_instance()->exception_handler($ex);
+			DatadogManager::get_instance()->exception_handler($ex);
 		}
 	}
 

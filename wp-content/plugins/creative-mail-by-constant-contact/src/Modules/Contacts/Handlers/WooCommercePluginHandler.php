@@ -4,7 +4,7 @@ namespace CreativeMail\Modules\Contacts\Handlers;
 
 define('CE4WP_WC_EVENTTYPE', 'WordPress - WooCommerce');
 
-use CreativeMail\Managers\RaygunManager;
+use CreativeMail\Managers\Logs\DatadogManager;
 use CreativeMail\Modules\Contacts\Models\ContactAddressModel;
 use CreativeMail\Modules\Contacts\Models\ContactModel;
 use Exception;
@@ -181,7 +181,7 @@ final class WooCommercePluginHandler extends BaseContactFormPluginHandler {
 				$this->upsertContact($this->convertToContactModel($order->get_id()));
 			}
 		} catch ( Exception $exception ) {
-			RaygunManager::get_instance()->exception_handler($exception);
+			DatadogManager::get_instance()->exception_handler($exception);
 		}
 	}
 
